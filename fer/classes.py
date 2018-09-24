@@ -19,6 +19,7 @@ class Video(object):
     def __init__(self, video_file):
         assert os.path.exists(video_file), "Video file not found at {}".format(os.path.abspath(video_file))
         self.cap = cv2.VideoCapture(video_file)
+        self.__video_file = video_file
 
     @staticmethod
     def get_max_faces(data):
@@ -28,6 +29,12 @@ class Video(object):
                 if len(face) > max:
                     max = len(face)
         return max
+
+    def filepath(self):
+        return self.__video_file
+
+    def filename(self):
+        return ''.join(self.filepath.split('/')[-1])
 
     def to_dict(self, data):
         max_faces = self.get_max_faces(data)
@@ -66,6 +73,7 @@ class Video(object):
 
     @staticmethod
     def get_first_face(df):
+        assert isinstance(df, pd.DataFrame), "Must be a pandas DataFrame"
         columns = [x for x in df.columns if x[-1] is '0']
         new_columns = [x[:-1] for x in columns]
         single_df = df[columns]
