@@ -105,6 +105,8 @@ class Video(object):
         length = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
         print("INFO: {:.2f} fps, {} frames, {:.2f} seconds".format(fps, length, length / fps))
         capture_duration = 1000 / fps
+        if save_frames:
+            os.makedirs('images', exist_ok=True)
 
         if save_video:
             outfile = 'output.mp4'
