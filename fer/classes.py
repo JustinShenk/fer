@@ -176,10 +176,11 @@ class Video(object):
         except:
             pass
         print("Completed analysis")
-        if output is None:
-            return data
+
+        if output is 'csv':
+            return self.to_csv(data)
         elif output is 'pandas':
-            return NotImplementedError
+            return self.to_pandas(data)
 
         return data
 
