@@ -4,10 +4,10 @@ FER
 Facial expression recognition.
 
 .. image:: https://github.com/justinshenk/fer/raw/master/result.jpg
-.. image:: https://badge.fury.io/py/mtcnn.svg
-    :target: https://badge.fury.io/py/mtcnn
-.. image:: https://travis-ci.org/ipazc/mtcnn.svg?branch=master
-    :target: https://travis-ci.org/ipazc/mtcnn
+.. image:: https://badge.fury.io/py/fer.svg
+    :target: https://badge.fury.io/py/fer
+.. image:: https://travis-ci.org/justinshenk/fer.svg?branch=master
+    :target: https://travis-ci.org/justinshenk/fer
 
 
 INSTALLATION
