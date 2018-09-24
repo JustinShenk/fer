@@ -13,7 +13,10 @@ import sys
 
 
 if __name__ == '__main__':
-    videofile = sys.argv[1]
+    try:
+        videofile = sys.argv[1]
+    except:
+        videofile = 'test.mp4'
     detector = FER()
     video = Video(videofile)
 
