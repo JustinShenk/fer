@@ -9,7 +9,7 @@ fer = None
 
 class TestFER(unittest.TestCase):
 
-    def setUpClass(self):
+    def setUpClass():
         global detector
         detector = FER()
 
@@ -52,7 +52,7 @@ class TestFER(unittest.TestCase):
         self.assertEqual(len(result), 0)
 
 
-    def tearDownClass(self):
+    def tearDownClass():
         global fer
         del fer
 
