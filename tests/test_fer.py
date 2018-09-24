@@ -13,9 +13,9 @@ class TestFER(unittest.TestCase):
         global detector
         detector = FER()
 
-    def test_detect_faces(self):
+    def test_detect_emotions(self):
         """
-        FER is able to detect faces and landmarks on an image
+        FER is able to detect faces image
         :return:
         """
         justin = cv2.imread("justin.jpg")
@@ -38,7 +38,7 @@ class TestFER(unittest.TestCase):
         justin = cv2.imread("example.py")
 
         with self.assertRaises(InvalidImage):
-            result = detector.detect_faces(justin)  # type: list
+            result = detector.detect_emotions(justin)  # type: list
 
     def test_detect_no_faces_on_no_faces_content(self):
         """
@@ -47,7 +47,7 @@ class TestFER(unittest.TestCase):
         """
         justin = cv2.imread("no-faces.jpg")
 
-        result = detector.detect_faces(justin)  # type: list
+        result = detector.detect_emotions(justin)  # type: list
         self.assertEqual(len(result), 0)
 
 
