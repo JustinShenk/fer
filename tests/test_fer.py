@@ -4,7 +4,7 @@ import cv2
 from fer.exceptions import InvalidImage
 from fer.fer import FER
 
-fer = None
+detector = None
 
 
 class TestFER(unittest.TestCase):
@@ -46,15 +46,15 @@ class TestFER(unittest.TestCase):
         FER successfully reports an empty list when no faces are detected.
         :return:
         """
-        ivan = cv2.imread("no-faces.jpg")
+        justin = cv2.imread("no-faces.jpg")
 
-        result = detector.detect_faces(ivan)  # type: list
+        result = detector.detect_faces(justin)  # type: list
         self.assertEqual(len(result), 0)
 
 
     def tearDownClass():
-        global fer
-        del fer
+        global detector
+        del detector
 
 if __name__ == '__main__':
     unittest.main()
