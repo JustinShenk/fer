@@ -20,15 +20,14 @@ cv2.rectangle(image,
               2)
 
 for idx, (emotion, score) in enumerate(emotions.items()):
-    if score < 0.01:
-        continue
-    emotion_score = "{}: {:.2f}".format(emotion, score)
+    color = (211, 211, 211) if score < 0.01 else (0, 255, 0)
+    emotion_score = "{}: {}".format(emotion, "{:.2f}".format(score) if score > 0.01 else "")
     cv2.putText(image,
                 emotion_score,
                 (bounding_box[0],bounding_box[1]+bounding_box[3] + 30 + idx*15),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.5,
-                (0,255,0),
+                color,
                 1,
                 cv2.LINE_AA)
 cv2.imwrite("justin_drawn.jpg", image)
