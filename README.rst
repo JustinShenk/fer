@@ -4,6 +4,10 @@ FER
 Facial expression recognition.
 
 .. image:: https://github.com/justinshenk/fer/raw/master/result.jpg
+.. image:: https://badge.fury.io/py/mtcnn.svg
+    :target: https://badge.fury.io/py/mtcnn
+.. image:: https://travis-ci.org/ipazc/mtcnn.svg?branch=master
+    :target: https://travis-ci.org/ipazc/mtcnn
 
 
 INSTALLATION
@@ -22,7 +26,7 @@ They can be installed through pip (if pip version >= 9.0.1):
 
 .. code:: bash
 
-    $ pip3 install tensorflow>=1.7 opencv-contrib-python==3.2.0.8
+    $ pip3 install tensorflow>=1.7 opencv-contrib-python==3.3.0.9
 
 or compiled directly from sources (`OpenCV3 <https://github.com/opencv/opencv/archive/3.4.0.zip>`_, `Tensorflow <https://www.tensorflow.org/install/install_sources>`_).
 
