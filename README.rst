@@ -78,7 +78,7 @@ LICENSE
 CREDIT
 ######
 
-This code includes methods and package structure copied or derived from Iván de Paz Centeno's `implementation<https://github.com/ipazc/mtcnn/>_` of MTCNN and Octavia Arriaga's `facial expression recognition repo<https://github.com/oarriaga/face_classification/>_`.
+This code includes methods and package structure copied or derived from Iván de Paz Centeno's `implementation <https://github.com/ipazc/mtcnn/>`_ of MTCNN and Octavia Arriaga's `facial expression recognition repo <https://github.com/oarriaga/face_classification/>`_.
 
 REFERENCE
 =========
