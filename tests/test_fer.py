@@ -29,7 +29,6 @@ class TestFER(unittest.TestCase):
         self.assertIn('box', first)
         self.assertIn('emotions', first)
         self.assertTrue(len(first['box']), 1)
-        self.assertTrue(len(first['keypoints']), 5)
 
     def test_detect_faces_invalid_content(self):
         """
