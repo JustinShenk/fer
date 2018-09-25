@@ -16,9 +16,12 @@ def tocap(func):
 
 
 class Video(object):
-    def __init__(self, video_file):
+    def __init__(self, video_file, outdir='output'):
         assert os.path.exists(video_file), "Video file not found at {}".format(os.path.abspath(video_file))
         self.cap = cv2.VideoCapture(video_file)
+        if not os.path.isdir(outdir):
+            os.makedirs(outdir, exist_ok=True)
+        self.outdir = outdir
         self.__video_file = video_file
 
     @staticmethod
@@ -114,7 +117,7 @@ class Video(object):
         print("INFO: {:.2f} fps, {} frames, {:.2f} seconds".format(fps, length, length / fps))
         capture_duration = 1000 / fps
         if save_frames:
-            os.makedirs('images', exist_ok=True)
+            os.makedirs(self.outdir, exist_ok=True)
 
         if save_video:
             outfile = 'output.mp4'
@@ -139,7 +142,7 @@ class Video(object):
                 break
 
             if save_frames:
-                name = 'images/frame' + str(frameCount) + '.jpg'
+                name = os.path.join(self.outdir,'frame' + str(frameCount) + '.jpg')
                 cv2.imwrite(name, frame)
 
             if display or save_video:
