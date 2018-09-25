@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 import csv
 import cv2
+import logging
 import os
+import pandas as pd
 import re
 import time
 
@@ -16,12 +18,13 @@ def tocap(func):
 
 
 class Video(object):
-    def __init__(self, video_file, outdir='output'):
+    def __init__(self, video_file, outdir='output', tempfile=None):
         assert os.path.exists(video_file), "Video file not found at {}".format(os.path.abspath(video_file))
         self.cap = cv2.VideoCapture(video_file)
         if not os.path.isdir(outdir):
             os.makedirs(outdir, exist_ok=True)
         self.outdir = outdir
+        self.tempfile = tempfile
         self.__video_file = video_file
 
     @staticmethod
@@ -65,11 +68,6 @@ class Video(object):
         return dictlist
 
     def to_pandas(self, data):
-        try:
-            import pandas as pd
-        except ImportError:
-            print("ERROR: Pandas not installed. Install pandas with `pip install pandas`")
-            return
         datalist = self.to_dict(data)
         df = pd.DataFrame(datalist)
         return df
@@ -106,33 +104,41 @@ class Video(object):
             writer.writerows(dictlist)
         return True
 
-    def analyze(self, detector, display=False, output=None, frequency=4, save_frames=True, save_video=True):
+    def analyze(self, detector, display=False, output=None, frequency=4, save_frames=True, save_video=True, annotate_frames=True):
         data = []
         self.__emotions = detector._get_labels().items()
+
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        pos_frames = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
+        assert int(pos_frames) == 0, "Video not at index 0"
 
         frameCount = 0
         height, width = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         fps = self.cap.get(cv2.CAP_PROP_FPS)
         length = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        print("INFO: {:.2f} fps, {} frames, {:.2f} seconds".format(fps, length, length / fps))
+        assert fps and length, "File {} not loaded".format(self.filepath())
+        logging.info("{:.2f} fps, {} frames, {:.2f} seconds".format(fps, length, length / fps))
+
         capture_duration = 1000 / fps
         if save_frames:
             os.makedirs(self.outdir, exist_ok=True)
 
         if save_video:
-            outfile = 'output.mp4'
+            outfile = os.path.join(self.outdir, 'output.mp4')
             if os.path.isfile(outfile):
-                os.remove(outfile); print("INFO: Deleted {}".format(outfile))
+                os.remove(outfile); logging.info("Deleted pre-existing {}".format(outfile))
+            if self.tempfile and os.path.isfile(self.tempfile):
+                os.remove(self.tempfile)
             fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
-            out = cv2.VideoWriter(outfile, fourcc, fps, (width, height), True)
+            out = cv2.VideoWriter(self.tempfile or outfile, fourcc, fps, (width, height), True)
 
         while self.cap.isOpened():
             start_time = time.time()
             ret, frame = self.cap.read()
-            frameCount += 1
             if not ret:
                 break
             if frameCount % frequency != 0:
+                frameCount += 1
                 continue
             padded_frame = detector.pad(frame)
             try:
@@ -141,11 +147,11 @@ class Video(object):
                 print("ERROR: {}".format(e))
                 break
 
-            if save_frames:
+            if save_frames and not annotate_frames:
                 name = os.path.join(self.outdir,'frame' + str(frameCount) + '.jpg')
                 cv2.imwrite(name, frame)
 
-            if display or save_video:
+            if display or save_video or annotate_frames:
                 for face in result:
                     bounding_box = face['box']
                     emotions = face['emotions']
@@ -169,6 +175,10 @@ class Video(object):
                                     cv2.LINE_AA)
                     if display:
                         cv2.imshow('Video', frame)
+                    if save_frames and annotate_frames:
+                        name = os.path.join(self.outdir, 'frame' + str(frameCount) + '.jpg')
+                        cv2.imwrite(name, frame)
+
                     if save_video:
                         out.write(frame)
 
@@ -180,13 +190,15 @@ class Video(object):
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         break
 
+            frameCount += 1
             data.append(result)
+
         self.cap.release()
-        try:
+        if display or save_video:
             out.release()
-        except:
-            pass
-        print("Completed analysis")
+            logging.info("Completed analysis: saved to {}".format(self.tempfile or outfile))
+            if self.tempfile:
+                os.replace(self.tempfile, outfile)
 
         if output is 'csv':
             return self.to_csv(data)

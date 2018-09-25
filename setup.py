@@ -50,6 +50,11 @@ setup(name='fer',
       license='MIT',
       packages=setuptools.find_packages(exclude=["tests.*", "tests"]),
       install_requires=[
+          'matplotlib',
+          'tensorflow',
+          'opencv-contrib-python',
+          'keras',
+          'pandas'
       ],
       classifiers=[
           'Environment :: Console',

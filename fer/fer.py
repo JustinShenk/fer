@@ -77,6 +77,7 @@ class FER(object):
         config.gpu_options.allow_growth = True
 
         self.__emotion_classifier = load_model(emotion_model, compile=False)
+        self.__emotion_classifier._make_predict_function()
         self.__emotion_target_size = self.__emotion_classifier.input_shape[1:3]
 
 
