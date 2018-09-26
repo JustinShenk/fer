@@ -19,6 +19,11 @@ def tocap(func):
 
 class Video(object):
     def __init__(self, video_file, outdir='output', tempfile=None):
+        """Video class.
+        :param video_file - str
+        :param outdir - str
+        :param tempfile - str
+        """
         assert os.path.exists(video_file), "Video file not found at {}".format(os.path.abspath(video_file))
         self.cap = cv2.VideoCapture(video_file)
         if not os.path.isdir(outdir):
@@ -40,7 +45,7 @@ class Video(object):
         return self.__video_file
 
     def filename(self):
-        return ''.join(self.filepath.split('/')[-1])
+        return ''.join(self.filepath().split('/')[-1])
 
     def to_dict(self, data):
         max_faces = self.get_max_faces(data)
@@ -106,8 +111,9 @@ class Video(object):
 
     def analyze(self, detector, display=False, output=None, frequency=4, save_frames=True, save_video=True, annotate_frames=True):
         data = []
-        self.__emotions = detector._get_labels().items()
 
+        assert self.cap.open(self.filepath()), "Video capture not opening"
+        self.__emotions = detector._get_labels().items()
         self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
         pos_frames = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
         assert int(pos_frames) == 0, "Video not at index 0"
