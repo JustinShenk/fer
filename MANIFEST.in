@@ -1,0 +1,4 @@
+include fer/data/haarcascade_frontalface_default.xml
+include fer/data/emotion_model.hdf5
+include requirements.txt
+include AUTHORS
