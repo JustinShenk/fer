@@ -63,7 +63,7 @@ Other good examples of usage can be found in the files "`example.py`_." and "`vi
 MODEL
 #####
 
-By default the FER bundles a face detection Keras model.
+FER bundles a face detector and facial expression recognition Keras model.
 
 The model is a convolutional neural network with weights saved to HDF5 file in the 'data' folder relative
 to the module's path. It can be overriden by injecting it into the FER() constructor during instantiation with `emotion_model` parameter.
