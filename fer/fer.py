@@ -48,9 +48,9 @@ class FER(object):
     """
 
     def __init__(self, cascade_file: str=None, mtcnn=False, emotion_model: str=None, scale_factor: float=1.3,
-                 min_face_size: int=40, offsets: tuple=(20,40)):
+                 min_face_size: int=40, offsets: tuple=(20,40), compile: bool=False):
         """
-        Initializes the face detector and neural network for facial expression recognition.
+        Initializes the face detector and Keras model for facial expression recognition.
         :param cascade_file: file uri with the Haar cascade for face classification
         :param emotion_model: file uri with the Keras hdf5 model
         :param scale_factor: parameter specifying how much the image size is reduced at each image scale
@@ -72,11 +72,11 @@ class FER(object):
 
         if emotion_model is None:
             emotion_model = pkg_resources.resource_filename('fer', 'data/emotion_model.hdf5')
-
+        print("Emotion model", emotion_model)
         config = tf.ConfigProto(log_device_placement=False)
         config.gpu_options.allow_growth = True
 
-        self.__emotion_classifier = load_model(emotion_model, compile=True)
+        self.__emotion_classifier = load_model(emotion_model, compile=compile)
         self.__emotion_classifier._make_predict_function()
         self.__emotion_target_size = self.__emotion_classifier.input_shape[1:3]
 
@@ -84,7 +84,7 @@ class FER(object):
     @property
     def min_face_size(self):
         return self.__min_face_size
-    
+
     @min_face_size.setter
     def min_face_size(self, mfc=50):
         try:
@@ -137,7 +137,7 @@ class FER(object):
 
     def detect_emotions(self, img) -> list:
         """
-        Detects bounding boxes from the specified image.
+        Detects bounding boxes from the specified image with ranking of emotions.
         :param img: image to process
         :return: list containing all the bounding boxes detected with their emotions.
         """
