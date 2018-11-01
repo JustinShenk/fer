@@ -132,7 +132,7 @@ class Video(object):
 
         if save_video:
             root, ext = os.path.splitext(self.filepath())
-            outfile = os.path.join(self.outdir, f'{root}_output.{ext}')
+            outfile = os.path.join(self.outdir, f'{root}_output{ext}')
             if os.path.isfile(outfile):
                 os.remove(outfile); logging.info("Deleted pre-existing {}".format(outfile))
             if self.tempfile and os.path.isfile(self.tempfile):
