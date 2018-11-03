@@ -32,7 +32,7 @@ __author__ = 'Justin Shenk'
 
 
 def readme():
-    with open('README.rst', encoding="UTF-8") as f:
+    with open('README.md', encoding="UTF-8") as f:
         return f.read()
 
 
@@ -44,7 +44,8 @@ setup(name='fer',
       version=__version__,
       description='Facial Expression Recognition based on Keras',
       long_description=readme(),
-      url='http://github.com/justionshenk/fer',
+      long_description_content_type='text/markdown',
+      url='https://github.com/justinshenk/fer',
       author='Justin Shenk',
       author_email='shenk.justin@gmail.com',
       license='MIT',
