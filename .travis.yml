@@ -1,15 +1,21 @@
+sudo: true
+dist: xenial
 language: python
 python:
-- '3.4'
-- '3.5'
-- 3.5-dev
-- '3.6'
-- 3.6-dev
+- 3.5
+- 3.6
+cache: pip
+addons:
+  apt:
+    packages:
+      - libglib2.0-0
 before_install:
 - sudo apt-get -qq update
 - sudo apt-get install -y libglib2.0-0
-install:
 - pip install -r requirements.txt
+install:
+- pip install .
+before_script:
 - pip install nose coverage
 - pip install coveralls
 script:
