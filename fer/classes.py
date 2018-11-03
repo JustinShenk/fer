@@ -19,7 +19,7 @@ def tocap(func):
 
 class Video(object):
     def __init__(self, video_file, outdir='output', tempfile=None):
-        """Video class.
+        """Video class for extracting and saving frames for emotion detection.
         :param video_file - str
         :param outdir - str
         :param tempfile - str
@@ -111,6 +111,7 @@ class Video(object):
 
     def analyze(self, detector, display=False, output=None, frequency=4, save_frames=True, save_video=True, annotate_frames=True):
         data = []
+        frequency = int(frequency)
 
         assert self.cap.open(self.filepath()), "Video capture not opening"
         self.__emotions = detector._get_labels().items()
@@ -130,7 +131,8 @@ class Video(object):
             os.makedirs(self.outdir, exist_ok=True)
 
         if save_video:
-            outfile = os.path.join(self.outdir, 'output.mp4')
+            root, ext = os.path.splitext(self.filepath())
+            outfile = os.path.join(self.outdir, f'{root}_output{ext}')
             if os.path.isfile(outfile):
                 os.remove(outfile); logging.info("Deleted pre-existing {}".format(outfile))
             if self.tempfile and os.path.isfile(self.tempfile):
