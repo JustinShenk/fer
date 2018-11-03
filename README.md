@@ -73,7 +73,7 @@ By default the FER bundles a face detection Keras model.
 The model is a convolutional neural network with weights saved to HDF5
 file in the 'data' folder relative to the module's path. It can be
 overriden by injecting it into the FER() constructor during
-instantiation with emotion\_model parameter.
+instantiation with the `emotion_model` parameter.
 
 LICENSE
 =======
