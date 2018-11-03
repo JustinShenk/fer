@@ -17,7 +17,7 @@ script:
 after_success:
 - coveralls
 deploy:
-  provider: pyip
+  provider: pypi
   user: jshenk
   skip_cleanup: true
   on:
