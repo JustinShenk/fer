@@ -1,20 +1,27 @@
 language: python
 python:
-  - "3.4"
-  - "3.5"
-  - "3.5-dev" # 3.5 development branch
-  - "3.6"
-  - "3.6-dev" # 3.6 development branch
-# command to install dependencies
+- '3.4'
+- '3.5'
+- 3.5-dev
+- '3.6'
+- 3.6-dev
 before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y libglib2.0-0
+- sudo apt-get -qq update
+- sudo apt-get install -y libglib2.0-0
 install:
-  - pip install -r requirements.txt
-  - pip install nose coverage
-  - pip install coveralls
-# # command to run tests, e.g. python setup.py test
+- pip install -r requirements.txt
+- pip install nose coverage
+- pip install coveralls
 script:
-  - python3 setup.py nosetests --with-coverage --cover-package fer --verbosity=2
+- python3 setup.py nosetests --with-coverage --cover-package fer --verbosity=2
 after_success:
-  - coveralls
+- coveralls
+deploy:
+  provider: pyip
+  user: justinshenk
+  skip_cleanup: true
+  on:
+    tags: true
+    branch: master
+  password:
+    secure: nBq6tEi/DCeYMytcLIxwDmV/qjXIky8cQWLdQ2wn7ZmHiGXJPpG2BmDHpe2xryDA0el6THqCtKZPDM/K4cIc6TXbIAnuN1lJXd9bMAEHUcf5quYV3sqoA5dU5+ya1IBnqhDNlkgra1Xf0Tas/fpKf2YfcSgh5KvH+AZbXbUPtIU4F/kwtpfDCiEekqo7fCl3Iso1r+o2OVJZ4MDUw47x3TOeUrh+CsLuUMk0CG+9/X9c3cBwHTVKeU7dwznOgZxoWiQsgqgXbswERsZzkf4kLcaY0gScyWhzUJMtZlXwbTwTw6SB4CBxmrnJFCXKlENgeqgMTEmvvimoCnbkd+0uOCyCXH5daZ2JA9kF7TFM5MBNuM6UKeurhnNY5i2/J7GSHmHLvDHYgnGJc4xhBsYa5GGYJs9JLydN0VwAi5xjJ/e04qPmPb8Gx0Mn5Oy7L3N28Ia7XSKpk6yGdb8FHbPcGEFIwBeiSnrIUnTgiUGTVPQeIm+b3h5viRD0/mVDmBLQ3BVwRUVZSshbaDARawanhvTPCNHIzMMcGkegFJ39zkjFzJI6X0woe7Mh676y7r8sq2RYmz0ChUm5WpX3rj7XDFr7yrd9cBVigBKal9F4xjPtTOmaySpShpLlwY4ezQ9qi7WFwNlIqUe8cR+cxdGaM79jcc0zpN3tnP+yBuo8Jic=
