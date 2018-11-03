@@ -5,9 +5,7 @@ Facial expression recognition.
 
 ![image](https://github.com/justinshenk/fer/raw/master/result.jpg)
 
-![image](https://badge.fury.io/py/fer.svg%0A%20:target:%20https://badge.fury.io/py/fer)
-
-![image](https://travis-ci.org/justinshenk/fer.svg?branch=master%0A%20:target:%20https://travis-ci.org/justinshenk/fer)
+[![PyPI version](https://badge.fury.io/py/fer.svg)](https://badge.fury.io/py/fer) [![Build Status](https://travis-ci.org/justinshenk/fer.svg?branch=master)](https://travis-ci.org/justinshenk/fer)
 
 INSTALLATION
 ============
