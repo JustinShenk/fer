@@ -27,7 +27,6 @@ import sys
 from setuptools import setup, setuptools
 from fer import __version__
 
-
 __author__ = 'Justin Shenk'
 
 
@@ -39,37 +38,38 @@ def readme():
 if sys.version_info < (3, 4, 1):
     sys.exit('Python < 3.4.1 is not supported!')
 
-
-setup(name='fer',
-      version=__version__,
-      description='Facial Expression Recognition based on Keras',
-      long_description=readme(),
-      long_description_content_type='text/markdown',
-      url='https://github.com/justinshenk/fer',
-      author='Justin Shenk',
-      author_email='shenk.justin@gmail.com',
-      license='MIT',
-      packages=setuptools.find_packages(exclude=["tests.*", "tests"]),
-      install_requires=[
-          'matplotlib',
-          'tensorflow',
-          'opencv-contrib-python',
-          'keras',
-          'pandas'
-      ],
-      classifiers=[
-          'Environment :: Console',
-          'Intended Audience :: Developers',
-          'Intended Audience :: Education',
-          'Intended Audience :: Science/Research',
-          'Natural Language :: English',
-          'Programming Language :: Python :: 3.4',
-          'Programming Language :: Python :: 3.5',
-          'Programming Language :: Python :: 3.6',
-          'Programming Language :: Python :: 3.7',
-      ],
-      test_suite='nose.collector',
-      tests_require=['nose'],
-      include_package_data=True,
-      keywords="expression emotion detection tensorflow pip package",
-      zip_safe=False)
+setup(
+    name='fer',
+    version=__version__,
+    description='Facial Expression Recognition based on Keras',
+    long_description=readme(),
+    long_description_content_type='text/markdown',
+    url='https://github.com/justinshenk/fer',
+    author='Justin Shenk',
+    author_email='shenk.justin@gmail.com',
+    license='MIT',
+    packages=setuptools.find_packages(exclude=["tests.*", "tests"]),
+    install_requires=[
+        'matplotlib', 'tensorflow', 'opencv-contrib-python', 'keras', 'pandas'
+    ],
+    classifiers=[
+        'Environment :: Console',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Education',
+        'Intended Audience :: Science/Research',
+        'Natural Language :: English',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+    ],
+    test_suite='nose.collector',
+    tests_require=['nose'],
+    include_package_data=True,
+    keywords="expression emotion detection tensorflow pip package",
+    entry_point={
+        'console_scripts': [
+            'fer=fer.fer:inference',
+        ],
+    },
+    zip_safe=False)

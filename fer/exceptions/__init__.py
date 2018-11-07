@@ -25,5 +25,6 @@
 
 __author__ = "Justin Shenk"
 
+
 class InvalidImage(Exception):
     pass

@@ -8,7 +8,6 @@ detector = None
 
 
 class TestFER(unittest.TestCase):
-
     def setUpClass():
         global detector
         detector = FER()
@@ -50,10 +49,10 @@ class TestFER(unittest.TestCase):
         result = detector.detect_emotions(justin)  # type: list
         self.assertEqual(len(result), 0)
 
-
     def tearDownClass():
         global detector
         del detector
+
 
 if __name__ == '__main__':
     unittest.main()

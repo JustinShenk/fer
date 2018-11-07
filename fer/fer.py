@@ -33,6 +33,7 @@
 import cv2
 import numpy as np
 import pkg_resources
+import sys
 import tensorflow as tf
 from fer.exceptions import InvalidImage
 from keras.models import load_model
@@ -47,8 +48,14 @@ class FER(object):
         b) Detection of emotions
     """
 
-    def __init__(self, cascade_file: str=None, mtcnn=False, emotion_model: str=None, scale_factor: float=1.3,
-                 min_face_size: int=40, offsets: tuple=(20,40), compile: bool=False):
+    def __init__(self,
+                 cascade_file: str = None,
+                 mtcnn=False,
+                 emotion_model: str = None,
+                 scale_factor: float = 1.3,
+                 min_face_size: int = 40,
+                 offsets: tuple = (20, 40),
+                 compile: bool = False):
         """
         Initializes the face detector and Keras model for facial expression recognition.
         :param cascade_file: file uri with the Haar cascade for face classification
@@ -62,7 +69,8 @@ class FER(object):
         self.__offsets = offsets
 
         if cascade_file is None:
-            cascade_file = pkg_resources.resource_filename('fer', 'data/haarcascade_frontalface_default.xml')
+            cascade_file = pkg_resources.resource_filename(
+                'fer', 'data/haarcascade_frontalface_default.xml')
 
         if mtcnn:
             self.__face_detector = 'mtcnn'
@@ -71,7 +79,8 @@ class FER(object):
             self.__face_detector = cv2.CascadeClassifier(cascade_file)
 
         if emotion_model is None:
-            emotion_model = pkg_resources.resource_filename('fer', 'data/emotion_model.hdf5')
+            emotion_model = pkg_resources.resource_filename(
+                'fer', 'data/emotion_model.hdf5')
         print("Emotion model", emotion_model)
         config = tf.ConfigProto(log_device_placement=False)
         config.gpu_options.allow_growth = True
@@ -79,7 +88,6 @@ class FER(object):
         self.__emotion_classifier = load_model(emotion_model, compile=compile)
         self.__emotion_classifier._make_predict_function()
         self.__emotion_target_size = self.__emotion_classifier.input_shape[1:3]
-
 
     @property
     def min_face_size(self):
@@ -99,21 +107,28 @@ class FER(object):
         mean = cv2.mean(bottom)[0]
 
         bordersize = 40
-        padded_image = cv2.copyMakeBorder(image, top=bordersize, bottom=bordersize, left=bordersize, right=bordersize,
-                                    borderType=cv2.BORDER_CONSTANT, value=[mean, mean, mean])
+        padded_image = cv2.copyMakeBorder(
+            image,
+            top=bordersize,
+            bottom=bordersize,
+            left=bordersize,
+            right=bordersize,
+            borderType=cv2.BORDER_CONSTANT,
+            value=[mean, mean, mean])
         return padded_image
 
     @staticmethod
     def depad(image):
         row, col = image.shape[:2]
-        return image[40:row-40, 40:col-40]
+        return image[40:row - 40, 40:col - 40]
 
     def find_faces(self, gray_image_array):
-        faces = self.__face_detector.detectMultiScale(gray_image_array,
-                                                      scaleFactor = self.__scale_factor,
-                                                      minNeighbors = 5,
-                                                      flags = 0,
-                                                      minSize = (self.__min_face_size, self.__min_face_size))
+        faces = self.__face_detector.detectMultiScale(
+            gray_image_array,
+            scaleFactor=self.__scale_factor,
+            minNeighbors=5,
+            flags=0,
+            minSize=(self.__min_face_size, self.__min_face_size))
         return faces
 
     @staticmethod
@@ -132,8 +147,15 @@ class FER(object):
 
     @staticmethod
     def _get_labels():
-        return {0: 'angry', 1: 'disgust', 2: 'fear', 3: 'happy',
-                4: 'sad', 5: 'surprise', 6: 'neutral'}
+        return {
+            0: 'angry',
+            1: 'disgust',
+            2: 'fear',
+            3: 'happy',
+            4: 'sad',
+            5: 'surprise',
+            6: 'neutral'
+        }
 
     def detect_emotions(self, img) -> list:
         """
@@ -161,7 +183,35 @@ class FER(object):
             gray_face = self.__preprocess_input(gray_face, True)
             gray_face = np.expand_dims(gray_face, 0)
             gray_face = np.expand_dims(gray_face, -1)
-            emotion_prediction = self.__emotion_classifier.predict(gray_face)[0]
-            labelled_emotions = {emotion_labels[idx]: round(score,2) for idx, score in enumerate(emotion_prediction)}
-            emotions.append({'box':face_coordinates, 'emotions': labelled_emotions})
+            emotion_prediction = self.__emotion_classifier.predict(gray_face)[
+                0]
+            labelled_emotions = {
+                emotion_labels[idx]: round(score, 2)
+                for idx, score in enumerate(emotion_prediction)
+            }
+            emotions.append({
+                'box': face_coordinates,
+                'emotions': labelled_emotions
+            })
         return emotions
+
+
+def parse_arguments(args):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--image', type=str, help='Image filepath')
+    return parser.parse_args()
+
+
+def inference():
+    args = parse_arguments(sys.argv)
+    fer = FER()
+    inference = fer.detect_emotion(args.image)
+    print(inference)
+
+
+def main(args=None):
+    pass
+
+
+if __name__ == '__main__':
+    main()

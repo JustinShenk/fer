@@ -8,6 +8,8 @@ import pandas as pd
 import re
 import time
 
+logging.getLogger(__name__)
+
 
 def tocap(func):
     def wrapper(*args, **kwargs):
@@ -24,7 +26,8 @@ class Video(object):
         :param outdir - str
         :param tempfile - str
         """
-        assert os.path.exists(video_file), "Video file not found at {}".format(os.path.abspath(video_file))
+        assert os.path.exists(video_file), "Video file not found at {}".format(
+            os.path.abspath(video_file))
         self.cap = cv2.VideoCapture(video_file)
         if not os.path.isdir(outdir):
             os.makedirs(outdir, exist_ok=True)
@@ -68,7 +71,10 @@ class Video(object):
             rowdict = {}
             for idx, face in enumerate(frame):
                 rowdict.update({'box' + str(idx): face['box']})
-                rowdict.update({emo + str(idx): face['emotions'][emo] for emo in emotions})
+                rowdict.update({
+                    emo + str(idx): face['emotions'][emo]
+                    for emo in emotions
+                })
             dictlist.append(rowdict)
         return dictlist
 
@@ -109,7 +115,14 @@ class Video(object):
             writer.writerows(dictlist)
         return True
 
-    def analyze(self, detector, display=False, output=None, frequency=4, save_frames=True, save_video=True, annotate_frames=True):
+    def analyze(self,
+                detector,
+                display=False,
+                output=None,
+                frequency=4,
+                save_frames=True,
+                save_video=True,
+                annotate_frames=True):
         data = []
         frequency = int(frequency)
 
@@ -120,11 +133,13 @@ class Video(object):
         assert int(pos_frames) == 0, "Video not at index 0"
 
         frameCount = 0
-        height, width = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height, width = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(
+            self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         fps = self.cap.get(cv2.CAP_PROP_FPS)
         length = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
         assert fps and length, "File {} not loaded".format(self.filepath())
-        logging.info("{:.2f} fps, {} frames, {:.2f} seconds".format(fps, length, length / fps))
+        logging.info("{:.2f} fps, {} frames, {:.2f} seconds".format(
+            fps, length, length / fps))
 
         capture_duration = 1000 / fps
         if save_frames:
@@ -134,11 +149,13 @@ class Video(object):
             root, ext = os.path.splitext(self.filepath())
             outfile = os.path.join(self.outdir, f'{root}_output{ext}')
             if os.path.isfile(outfile):
-                os.remove(outfile); logging.info("Deleted pre-existing {}".format(outfile))
+                os.remove(outfile)
+                logging.info("Deleted pre-existing {}".format(outfile))
             if self.tempfile and os.path.isfile(self.tempfile):
                 os.remove(self.tempfile)
             fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
-            out = cv2.VideoWriter(self.tempfile or outfile, fourcc, fps, (width, height), True)
+            out = cv2.VideoWriter(self.tempfile or outfile, fourcc, fps,
+                                  (width, height), True)
 
         while self.cap.isOpened():
             start_time = time.time()
@@ -156,7 +173,8 @@ class Video(object):
                 break
 
             if save_frames and not annotate_frames:
-                name = os.path.join(self.outdir,'frame' + str(frameCount) + '.jpg')
+                name = os.path.join(self.outdir,
+                                    'frame' + str(frameCount) + '.jpg')
                 cv2.imwrite(name, frame)
 
             if display or save_video or annotate_frames:
@@ -165,33 +183,37 @@ class Video(object):
                     emotions = face['emotions']
 
                     cv2.rectangle(frame,
-                                  (bounding_box[0]-40, bounding_box[1]-40),
-                                  (bounding_box[0]-40 + bounding_box[2], bounding_box[1]-40 + bounding_box[3]),
-                                  (0, 155, 255),
-                                  2)
+                                  (bounding_box[0] - 40, bounding_box[1] - 40),
+                                  (bounding_box[0] - 40 + bounding_box[2],
+                                   bounding_box[1] - 40 + bounding_box[3]),
+                                  (0, 155, 255), 2)
 
                     for idx, (emotion, score) in enumerate(emotions.items()):
-                        color = (211, 211, 211) if score < 0.01 else (0, 255, 0)
-                        emotion_score = "{}: {}".format(emotion, "{:.2f}".format(score) if score > 0.01 else "")
-                        cv2.putText(frame,
-                                    emotion_score,
-                                    (bounding_box[0]-40, bounding_box[1]-40 + bounding_box[3] + 30 + idx * 15),
-                                    cv2.FONT_HERSHEY_SIMPLEX,
-                                    0.5,
-                                    color,
-                                    1,
+                        color = (211, 211, 211) if score < 0.01 else (0, 255,
+                                                                      0)
+                        emotion_score = "{}: {}".format(
+                            emotion, "{:.2f}".format(score)
+                            if score > 0.01 else "")
+                        cv2.putText(frame, emotion_score,
+                                    (bounding_box[0] - 40, bounding_box[1] - 40
+                                     + bounding_box[3] + 30 + idx * 15),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1,
                                     cv2.LINE_AA)
                     if display:
                         cv2.imshow('Video', frame)
                     if save_frames and annotate_frames:
-                        name = os.path.join(self.outdir, 'frame' + str(frameCount) + '.jpg')
+                        name = os.path.join(self.outdir,
+                                            'frame' + str(frameCount) + '.jpg')
                         cv2.imwrite(name, frame)
 
                     if save_video:
                         out.write(frame)
 
                 if display or save_video:
-                    remaining_duration = max(1, int((time.time() - start_time) * 1000 - capture_duration))
+                    remaining_duration = max(
+                        1,
+                        int((time.time() - start_time) * 1000 -
+                            capture_duration))
                     if cv2.waitKey(remaining_duration) & 0xFF == ord('q'):
                         break
                 else:
@@ -204,7 +226,8 @@ class Video(object):
         self.cap.release()
         if display or save_video:
             out.release()
-            logging.info("Completed analysis: saved to {}".format(self.tempfile or outfile))
+            logging.info("Completed analysis: saved to {}".format(self.tempfile
+                                                                  or outfile))
             if self.tempfile:
                 os.replace(self.tempfile, outfile)
 
