@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import logging
+
 import csv
 import cv2
-import logging
+import numpy as np
 import os
 import pandas as pd
 import re
+import requests
+import tempfile
 import time
+
+from PIL import Image
 
 logging.getLogger(__name__)
 
@@ -17,6 +23,39 @@ def tocap(func):
         return Video(result)
 
     return wrapper
+
+
+class Peltarion_Emotion_Classifier(object):
+    def __init__(self, url, token, shape = (48, 48)):
+        self.url = url
+        self.token = token
+        self.shape = shape
+
+    @staticmethod
+    def unnormalize_face(gray_face: np.ndarray, shape: tuple = (48, 48), v2: bool = True) -> object:
+        gray_face = gray_face.reshape(shape)
+        if v2:
+            gray_face = gray_face / 2.0
+            gray_face = gray_face + 0.5
+        gray_face = gray_face * 255.0
+        return gray_face
+
+    def predict(self, gray_face) -> list:
+        """Gray face to emotions with Peltarion REST API"""
+        instance_path = os.environ.get('FLASK_INSTANCE_PATH')
+        temp_filepath = os.path.join(instance_path, 'tmp_01.npy')
+        gray_face = gray_face.reshape(48, 48, 1).astype(np.float32)
+        np.save(temp_filepath, gray_face)
+        headers = {'Authorization': 'Bearer ' + self.token}
+        files = {'image': open(temp_filepath, 'rb')}
+        response = requests.post(self.url,
+                                 headers=headers,
+                                 files=files).json()
+        try:
+            emotion = response['emotion']
+        except:
+            logging.error(f"{response.text} is not a valid response")
+        return emotion
 
 
 class Video(object):
@@ -169,7 +208,7 @@ class Video(object):
             try:
                 result = detector.detect_emotions(padded_frame)
             except Exception as e:
-                print("ERROR: {}".format(e))
+                logging.error(e)
                 break
 
             if save_frames and not annotate_frames:

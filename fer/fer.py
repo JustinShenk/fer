@@ -23,22 +23,31 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #SOFTWARE.
 
+import logging
 # IMPORTANT:
 #
 # This code is derived from Iván de Paz Centeno's implentation of FER
 # (https://github.com/ipazc/fer/) and Octavia Arriaga's facial expression recognition repo
 # (https://github.com/oarriaga/face_classification).
 #
+import os
+import sys
 
 import cv2
 import numpy as np
 import pkg_resources
-import sys
 import tensorflow as tf
-from fer.exceptions import InvalidImage
 from keras.models import load_model
 
+from fer.classes import Peltarion_Emotion_Classifier
+from fer.exceptions import InvalidImage
+
 __author__ = "Justin Shenk"
+
+logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+    datefmt='%d-%m-%Y:%H:%M:%S',
+    level=logging.DEBUG)
+
 
 
 class FER(object):
@@ -79,15 +88,23 @@ class FER(object):
             self.__face_detector = cv2.CascadeClassifier(cascade_file)
 
         if emotion_model is None:
+            self.deployment = False
             emotion_model = pkg_resources.resource_filename(
                 'fer', 'data/emotion_model.hdf5')
-        print("Emotion model", emotion_model)
-        config = tf.ConfigProto(log_device_placement=False)
-        config.gpu_options.allow_growth = True
-
-        self.__emotion_classifier = load_model(emotion_model, compile=compile)
-        self.__emotion_classifier._make_predict_function()
-        self.__emotion_target_size = self.__emotion_classifier.input_shape[1:3]
+            config = tf.ConfigProto(log_device_placement=False)
+            config.gpu_options.allow_growth = True
+            self.__emotion_classifier = load_model(emotion_model, compile=compile)
+            self.__emotion_classifier._make_predict_function()
+            self.__emotion_target_size = self.__emotion_classifier.input_shape[1:3]
+        elif 'http' in emotion_model:
+            self.deployment = True
+            url = os.environ.get('EMOTION_API_URL')
+            token = os.environ.get('EMOTION_API_TOKEN')
+            self.__emotion_classifier = Peltarion_Emotion_Classifier(url, token)
+            self.__emotion_target_size = (48, 48) # Default FER image size
+        else:
+            raise Exception(f"{emotion_model} is not a valid type")
+        logging.info("Emotion model: {}".format(emotion_model))
 
     @property
     def min_face_size(self):
@@ -140,6 +157,7 @@ class FER(object):
             x = x * 2.0
         return x
 
+
     def __apply_offsets(self, face_coordinates):
         x, y, width, height = face_coordinates
         x_off, y_off = self.__offsets
@@ -180,15 +198,26 @@ class FER(object):
             except Exception as e:
                 print("{} resize failed".format(gray_face.shape))
                 continue
-            gray_face = self.__preprocess_input(gray_face, True)
-            gray_face = np.expand_dims(gray_face, 0)
-            gray_face = np.expand_dims(gray_face, -1)
-            emotion_prediction = self.__emotion_classifier.predict(gray_face)[
-                0]
-            labelled_emotions = {
-                emotion_labels[idx]: round(score, 2)
-                for idx, score in enumerate(emotion_prediction)
-            }
+            if not self.deployment:
+                # Local Keras model
+                gray_face = self.__preprocess_input(gray_face, True)
+                gray_face = np.expand_dims(gray_face, 0)
+                gray_face = np.expand_dims(gray_face, -1)
+                emotion_prediction = self.__emotion_classifier.predict(gray_face)[0]
+                labelled_emotions = {
+                    emotion_labels[idx]: round(score, 2)
+                    for idx, score in enumerate(emotion_prediction)
+                }
+            elif self.deployment:
+                import ipdb;ipdb.set_trace()
+                emotion_prediction = self.__emotion_classifier.predict(gray_face)
+                labelled_emotions = {
+                    emotion: round(score, 2)
+                    for emotion, score in emotion_prediction.items()
+                }
+            else:
+                raise NotImplementedError
+
             emotions.append({
                 'box': face_coordinates,
                 'emotions': labelled_emotions
@@ -197,6 +226,7 @@ class FER(object):
 
 
 def parse_arguments(args):
+    import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--image', type=str, help='Image filepath')
     return parser.parse_args()
