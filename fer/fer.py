@@ -209,7 +209,6 @@ class FER(object):
                     for idx, score in enumerate(emotion_prediction)
                 }
             elif self.deployment:
-                import ipdb;ipdb.set_trace()
                 emotion_prediction = self.__emotion_classifier.predict(gray_face)
                 labelled_emotions = {
                     emotion: round(score, 2)
