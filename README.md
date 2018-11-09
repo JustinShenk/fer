@@ -50,6 +50,10 @@ import cv2
 img = cv2.imread("justin.jpg")
 detector = FER()
 print(detector.detect_emotions(img))
+```
+
+Output:
+```
 [{'box': [277, 90, 48, 63], 'emotions': {'angry': 0.02, 'disgust': 0.0, 'fear': 0.05, 'happy': 0.16, 'neutral': 0.09, 'sad': 0.27, 'surprise': 0.41}]
 ```
 
