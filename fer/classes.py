@@ -12,8 +12,6 @@ import requests
 import tempfile
 import time
 
-from PIL import Image
-
 logging.getLogger(__name__)
 
 
@@ -26,13 +24,15 @@ def tocap(func):
 
 
 class Peltarion_Emotion_Classifier(object):
-    def __init__(self, url, token, shape = (48, 48)):
+    def __init__(self, url, token, shape=(48, 48)):
         self.url = url
         self.token = token
         self.shape = shape
 
     @staticmethod
-    def unnormalize_face(gray_face: np.ndarray, shape: tuple = (48, 48), v2: bool = True) -> object:
+    def unnormalize_face(gray_face: np.ndarray,
+                         shape: tuple = (48, 48),
+                         v2: bool = True) -> object:
         gray_face = gray_face.reshape(shape)
         if v2:
             gray_face = gray_face / 2.0
@@ -48,9 +48,7 @@ class Peltarion_Emotion_Classifier(object):
         np.save(temp_filepath, gray_face)
         headers = {'Authorization': 'Bearer ' + self.token}
         files = {'image': open(temp_filepath, 'rb')}
-        response = requests.post(self.url,
-                                 headers=headers,
-                                 files=files).json()
+        response = requests.post(self.url, headers=headers, files=files).json()
         try:
             emotion = response['emotion']
         except:
@@ -63,6 +61,7 @@ class Video(object):
         """Video class for extracting and saving frames for emotion detection.
         :param video_file - str
         :param outdir - str
+        :param tempdir - str
         :param tempfile - str
         """
         assert os.path.exists(video_file), "Video file not found at {}".format(
@@ -72,7 +71,8 @@ class Video(object):
             os.makedirs(outdir, exist_ok=True)
         self.outdir = outdir
         self.tempfile = tempfile
-        self.__video_file = video_file
+        self.filepath = video_file
+        self.filename = ''.join(self.filepath.split('/')[-1])
 
     @staticmethod
     def get_max_faces(data):
@@ -82,12 +82,6 @@ class Video(object):
                 if len(face) > max:
                     max = len(face)
         return max
-
-    def filepath(self):
-        return self.__video_file
-
-    def filename(self):
-        return ''.join(self.filepath().split('/')[-1])
 
     def to_dict(self, data):
         max_faces = self.get_max_faces(data)
@@ -154,18 +148,25 @@ class Video(object):
             writer.writerows(dictlist)
         return True
 
-    def analyze(self,
-                detector,
-                display=False,
-                output=None,
-                frequency=4,
-                save_frames=True,
-                save_video=True,
-                annotate_frames=True):
+    def analyze(
+            self,
+            detector,
+            display=False,
+            output=None,
+            frequency=1,
+            max_results=None,
+            video_id=None,
+            save_frames=True,
+            save_video=True,
+            annotate_frames=True,
+    ):
+        """Recognize facial expressions in video using `detector`."""
         data = []
         frequency = int(frequency)
+        results_nr = 0
 
-        assert self.cap.open(self.filepath()), "Video capture not opening"
+        # Open video
+        assert self.cap.open(self.filepath), "Video capture not opening"
         self.__emotions = detector._get_labels().items()
         self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
         pos_frames = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
@@ -176,7 +177,7 @@ class Video(object):
             self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         fps = self.cap.get(cv2.CAP_PROP_FPS)
         length = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        assert fps and length, "File {} not loaded".format(self.filepath())
+        assert fps and length, "File {} not loaded".format(self.filepath)
         logging.info("{:.2f} fps, {} frames, {:.2f} seconds".format(
             fps, length, length / fps))
 
@@ -184,22 +185,16 @@ class Video(object):
         if save_frames:
             os.makedirs(self.outdir, exist_ok=True)
 
+        root, ext = os.path.splitext(self.filepath)
+        outfile = os.path.join(self.outdir, f'{root}_output{ext}')
+
         if save_video:
-            root, ext = os.path.splitext(self.filepath())
-            outfile = os.path.join(self.outdir, f'{root}_output{ext}')
-            if os.path.isfile(outfile):
-                os.remove(outfile)
-                logging.info("Deleted pre-existing {}".format(outfile))
-            if self.tempfile and os.path.isfile(self.tempfile):
-                os.remove(self.tempfile)
-            fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
-            out = cv2.VideoWriter(self.tempfile or outfile, fourcc, fps,
-                                  (width, height), True)
+            videowriter = self.save_video(outfile, fps, width, height)
 
         while self.cap.isOpened():
             start_time = time.time()
             ret, frame = self.cap.read()
-            if not ret:
+            if not ret:  # end of video
                 break
             if frameCount % frequency != 0:
                 frameCount += 1
@@ -211,10 +206,11 @@ class Video(object):
                 logging.error(e)
                 break
 
+            # Save images to `self.outdir`
+            imgpath = os.path.join(
+                self.outdir, (video_id or root) + str(frameCount) + '.jpg')
             if save_frames and not annotate_frames:
-                name = os.path.join(self.outdir,
-                                    'frame' + str(frameCount) + '.jpg')
-                cv2.imwrite(name, frame)
+                cv2.imwrite(imgpath, frame)
 
             if display or save_video or annotate_frames:
                 for face in result:
@@ -241,12 +237,10 @@ class Video(object):
                     if display:
                         cv2.imshow('Video', frame)
                     if save_frames and annotate_frames:
-                        name = os.path.join(self.outdir,
-                                            'frame' + str(frameCount) + '.jpg')
-                        cv2.imwrite(name, frame)
-
+                        cv2.imwrite(imgpath, frame)
                     if save_video:
-                        out.write(frame)
+                        videowriter.write(frame)
+                    results_nr += 1
 
                 if display or save_video:
                     remaining_duration = max(
@@ -261,10 +255,12 @@ class Video(object):
 
             frameCount += 1
             data.append(result)
+            if max_results and results_nr > max_results:
+                break
 
         self.cap.release()
         if display or save_video:
-            out.release()
+            videowriter.release()
             logging.info("Completed analysis: saved to {}".format(self.tempfile
                                                                   or outfile))
             if self.tempfile:
@@ -274,8 +270,20 @@ class Video(object):
             return self.to_csv(data)
         elif output is 'pandas':
             return self.to_pandas(data)
-
+        else:
+            raise NotImplementedError()
         return data
+
+    def save_video(self, outfile, fps, width, height):
+        if os.path.isfile(outfile):
+            os.remove(outfile)
+            logging.info("Deleted pre-existing {}".format(outfile))
+        if self.tempfile and os.path.isfile(self.tempfile):
+            os.remove(self.tempfile)
+        fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+        videowriter = cv2.VideoWriter(self.tempfile or outfile, fourcc, fps,
+                                      (width, height), True)
+        return videowriter
 
     def __del__(self):
         cv2.destroyAllWindows()
