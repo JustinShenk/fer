@@ -44,12 +44,16 @@ USAGE
 The following example illustrates the ease of use of this package:
 
 ```python
->>> from fer.fer import FER
->>> import cv2
->>>
->>> img = cv2.imread("justin.jpg")
->>> detector = FER()
->>> print(detector.detect_emotions(img))
+from fer.fer import FER
+import cv2
+
+img = cv2.imread("justin.jpg")
+detector = FER()
+print(detector.detect_emotions(img))
+```
+
+Sample output:
+```
 [{'box': [277, 90, 48, 63], 'emotions': {'angry': 0.02, 'disgust': 0.0, 'fear': 0.05, 'happy': 0.16, 'neutral': 0.09, 'sad': 0.27, 'surprise': 0.41}]
 ```
 
@@ -62,17 +66,17 @@ two keys: 'box' and 'emotions':
     'disgust', 'fear', 'happy', 'sad', surprise', and 'neutral'.
 
 Other good examples of usage can be found in the files
-[example.py](example.py). and [video-example.py](video-example.py).
+[example.py](example.py) and [video-example.py](video-example.py)
 located in the root of this repository.
 
 MODEL
 =====
 
-By default the FER bundles a face detection Keras model.
+FER bundles a Keras model, as well as support for [Peltarion](https://peltarion.com) API.
 
 The model is a convolutional neural network with weights saved to HDF5
-file in the 'data' folder relative to the module's path. It can be
-overriden by injecting it into the FER() constructor during
+file in the `data` folder relative to the module's path. It can be
+overriden by injecting it into the `FER()` constructor during
 instantiation with the `emotion_model` parameter.
 
 LICENSE
