@@ -66,7 +66,7 @@ two keys: 'box' and 'emotions':
     'disgust', 'fear', 'happy', 'sad', surprise', and 'neutral'.
 
 Other good examples of usage can be found in the files
-[example.py](example.py). and [video-example.py](video-example.py).
+[example.py](example.py) and [video-example.py](video-example.py)
 located in the root of this repository.
 
 MODEL
