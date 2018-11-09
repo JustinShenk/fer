@@ -72,11 +72,11 @@ located in the root of this repository.
 MODEL
 =====
 
-By default the FER bundles a face detection Keras model.
+FER bundles a Keras model, as well as support for [Peltarion](https://peltarion.com) API.
 
 The model is a convolutional neural network with weights saved to HDF5
-file in the 'data' folder relative to the module's path. It can be
-overriden by injecting it into the FER() constructor during
+file in the `data` folder relative to the module's path. It can be
+overriden by injecting it into the `FER()` constructor during
 instantiation with the `emotion_model` parameter.
 
 LICENSE
