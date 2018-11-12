@@ -57,6 +57,17 @@ Sample output:
 [{'box': [277, 90, 48, 63], 'emotions': {'angry': 0.02, 'disgust': 0.0, 'fear': 0.05, 'happy': 0.16, 'neutral': 0.09, 'sad': 0.27, 'surprise': 0.41}]
 ```
 
+For recognize facial expressions in video, the `Video` class splits video into frames. It can use a local Keras model or Peltarion API for the backend:
+
+```python
+from fer.classes import Video
+
+video = Video(video_filename)
+# Analyze video, displaying the output
+raw_data = video.analyze(detector, display=True)
+df = video.to_pandas(raw_data)
+```
+
 The detector returns a list of JSON objects. Each JSON object contains
 two keys: 'box' and 'emotions':
 
