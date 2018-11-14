@@ -88,7 +88,8 @@ class FER(object):
         else:
             self.__face_detector = cv2.CascadeClassifier(cascade_file)
 
-        if emotion_model is None:
+        if not emotion_model:
+            # Local Keras model
             self.deployment = False
             emotion_model = pkg_resources.resource_filename(
                 'fer', 'data/emotion_model.hdf5')
