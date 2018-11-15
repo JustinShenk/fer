@@ -57,11 +57,12 @@ class Peltarion_Emotion_Classifier(object):
 
 
 class Video(object):
-    def __init__(self, video_file, outdir='output', tempfile=None):
+    def __init__(self, video_file, outdir='output', first_face_only=True, tempfile=None):
         """Video class for extracting and saving frames for emotion detection.
         :param video_file - str
         :param outdir - str
         :param tempdir - str
+        :param first_face_only - bool
         :param tempfile - str
         """
         assert os.path.exists(video_file), "Video file not found at {}".format(
@@ -70,6 +71,10 @@ class Video(object):
         if not os.path.isdir(outdir):
             os.makedirs(outdir, exist_ok=True)
         self.outdir = outdir
+
+        if not first_face_only:
+            logging.error("Only single-face charting is implemented")
+        self.first_face_only = first_face_only
         self.tempfile = tempfile
         self.filepath = video_file
         self.filename = ''.join(self.filepath.split('/')[-1])
@@ -114,6 +119,8 @@ class Video(object):
     def to_pandas(self, data):
         datalist = self.to_dict(data)
         df = pd.DataFrame(datalist)
+        if self.first_face_only:
+            df = self.get_first_face(df)
         return df
 
     @staticmethod
@@ -158,7 +165,7 @@ class Video(object):
             video_id=None,
             save_frames=True,
             save_video=True,
-            annotate_frames=True,
+            annotate_frames=True
     ):
         """Recognize facial expressions in video using `detector`."""
         data = []

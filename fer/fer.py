@@ -109,7 +109,7 @@ class FER(object):
             self.__emotion_target_size = (48, 48)  # Default FER image size
         else:
             raise Exception(f"{emotion_model} is not a valid type")
-        logging.info("Emotion model: {}".format(emotion_model))
+        logging.debug("Emotion model: {}".format(emotion_model))
 
     @property
     def min_face_size(self):
