@@ -80,6 +80,17 @@ Other good examples of usage can be found in the files
 [example.py](example.py) and [video-example.py](video-example.py)
 located in the root of this repository.
 
+PELTARION API
+=============
+
+Add the API URL as an `emotion_model` argument to `FER()`:
+
+```
+detector = FER(emotion_model=MY_API_URL)
+```
+
+FER will then pick up the URL and TOKEN from the environment as `EMOTION_API_URL` and `EMOTION_API_TOKEN`.
+
 MODEL
 =====
 
