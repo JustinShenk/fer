@@ -68,11 +68,13 @@ class FER(object):
                  compile: bool = False):
         """
         Initializes the face detector and Keras model for facial expression recognition.
-        :param cascade_file: file uri with the Haar cascade for face classification
-        :param emotion_model: file uri with the Keras hdf5 model
+        :param cascade_file: file URI with the Haar cascade for face classification
+        :param mtcnn: use MTCNN network for face detection (not yet implemented)
+        :param emotion_model: file URI with the Keras hdf5 model or Peltarion API URL
         :param scale_factor: parameter specifying how much the image size is reduced at each image scale
         :param min_face_size: minimum size of the face to detect
         :param offsets: padding around face before classification
+        :param compile: value for Keras `compile` argument
         """
         self.__scale_factor = scale_factor
         self.__min_face_size = min_face_size
