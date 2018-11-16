@@ -89,7 +89,7 @@ Add the API URL as an `emotion_model` argument to `FER()`:
 detector = FER(emotion_model=MY_API_URL)
 ```
 
-FER will then pick up the URL and TOKEN from the environment as `EMOTION_API_URL` and `EMOTION_API_TOKEN`.
+FER will then pick up the URL and token from the environment as `EMOTION_API_URL` and `EMOTION_API_TOKEN`.
 
 MODEL
 =====
