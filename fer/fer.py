@@ -26,8 +26,8 @@
 import logging
 # IMPORTANT:
 #
-# This code is derived from Iván de Paz Centeno's implentation of FER
-# (https://github.com/ipazc/fer/) and Octavia Arriaga's facial expression recognition repo
+# This code is derived from Iván de Paz Centeno's implentation of MTCNN
+# (https://github.com/ipazc/mtcnn/) and Octavia Arriaga's facial expression recognition repo
 # (https://github.com/oarriaga/face_classification).
 #
 import os
