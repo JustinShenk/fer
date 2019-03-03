@@ -14,7 +14,7 @@ Currently FER only supports Python3.4 onwards. It can be installed
 through pip:
 
 ```bash
-$ pip3 install fer
+$ pip install fer
 ```
 
 This implementation requires OpenCV\>=3.2 and Tensorflow\>=1.7.0
@@ -23,7 +23,7 @@ installed in the system, with bindings for Python3.
 They can be installed through pip (if pip version \>= 9.0.1):
 
 ```bash
-$ pip3 install tensorflow>=1.7 opencv-contrib-python==3.3.0.9
+$ pip install tensorflow>=1.7 opencv-contrib-python==3.3.0.9
 ```
 
 or compiled directly from sources
@@ -35,7 +35,7 @@ is available on the system, which will speedup the results. It can be
 installed with pip:
 
 ```bash
-$ pip3 install tensorflow-gpu\>=1.7.0
+$ pip install tensorflow-gpu\>=1.7.0
 ```
 
 USAGE
