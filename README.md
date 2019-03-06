@@ -117,4 +117,6 @@ repo](https://github.com/oarriaga/face_classification/).
 REFERENCE
 ---------
 
-FER 2013 dataset curated by Pierre Luc Carrier and Aaron Courville, described in "Challenges in Representation Learning: A report on three machine learning contests" by Ian Goodfellow et al.,[arXiv:1307.0414](https://arxiv.org/abs/1307.0414).
+FER 2013 dataset curated by Pierre Luc Carrier and Aaron Courville, described in:
+
+"Challenges in Representation Learning: A report on three machine learning contests," by Ian J. Goodfellow, Dumitru Erhan, Pierre Luc Carrier, Aaron Courville, Mehdi Mirza, Ben Hamner, Will Cukierski, Yichuan Tang, David Thaler, Dong-Hyun Lee, Yingbo Zhou, Chetan Ramaiah, Fangxiang Feng, Ruifan Li, Xiaojie Wang, Dimitris Athanasakis, John Shawe-Taylor, Maxim Milakov, John Park, Radu Ionescu, Marius Popescu, Cristian Grozea, James Bergstra, Jingjing Xie, Lukasz Romaszko, Bing Xu, Zhang Chuang, and Yoshua Bengio, [arXiv:1307.0414](https://arxiv.org/abs/1307.0414).
