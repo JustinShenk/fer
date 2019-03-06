@@ -116,3 +116,5 @@ repo](https://github.com/oarriaga/face_classification/).
 
 REFERENCE
 ---------
+
+FER 2013 dataset collated by Pierre Luc Carrier and Aaron Courville, described in "Challenges in Representation Learning: A report on three machine learning contests" by Ian Goodfellow et al.,[arXiv:1307.0414](https://arxiv.org/abs/1307.0414).
