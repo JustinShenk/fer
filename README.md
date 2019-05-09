@@ -10,7 +10,7 @@ Facial expression recognition.
 INSTALLATION
 ============
 
-Currently FER only supports Python3.4 onwards. It can be installed
+Currently FER only supports Python 3.6 onwards. It can be installed
 through pip:
 
 ```bash
