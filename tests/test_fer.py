@@ -8,9 +8,11 @@ detector = None
 
 
 class TestFER(unittest.TestCase):
-    def setUpClass(self):
+
+    @classmethod
+    def setUpClass(cls):
         global detector
-        self.detector = FER()
+        detector = FER()
 
     def test_detect_emotions(self):
         """
@@ -49,7 +51,8 @@ class TestFER(unittest.TestCase):
         result = detector.detect_emotions(justin)  # type: list
         self.assertEqual(len(result), 0)
 
-    def tearDownClass():
+    @classmethod
+    def tearDownClass(self):
         global detector
         del detector
 

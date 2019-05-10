@@ -3,7 +3,7 @@
 import logging
 
 import csv
-from typing import Union
+from typing import Union, List
 
 import cv2
 import numpy as np
@@ -82,7 +82,7 @@ class Video(object):
         self.filename = ''.join(self.filepath.split('/')[-1])
 
     @staticmethod
-    def get_max_faces(data):
+    def get_max_faces(data:list):
         max = 0
         for frame in data:
             for face in frame:
@@ -90,7 +90,7 @@ class Video(object):
                     max = len(face)
         return max
 
-    def to_dict(self, data:Union[dict, list]):
+    def to_dict(self, data:Union[dict, list]) -> dict:
         emotions = []
 
         frame = data[0]
@@ -118,7 +118,7 @@ class Video(object):
             dictlist.append(rowdict)
         return dictlist
 
-    def to_pandas(self, data):
+    def to_pandas(self, data:Union[pd.DataFrame, list]) -> pd.DataFrame:
         if isinstance(data, pd.DataFrame):
             return data
 
@@ -129,7 +129,7 @@ class Video(object):
         return df
 
     @staticmethod
-    def get_first_face(df):
+    def get_first_face(df:pd.DataFrame) -> pd.DataFrame:
         assert isinstance(df, pd.DataFrame), "Must be a pandas DataFrame"
         try:
             int(df.columns[0][-1])
@@ -144,7 +144,7 @@ class Video(object):
         return single_df
 
     @staticmethod
-    def get_emotions(df):
+    def get_emotions(df:pd.DataFrame) -> list:
         columns = [x for x in df.columns if 'box' not in x]
         return df[columns]
 
@@ -167,14 +167,14 @@ class Video(object):
     def analyze(
             self,
             detector,
-            display=False,
-            output="csv",
-            frequency=1,
-            max_results=None,
+            display:bool=False,
+            output:str="csv",
+            frequency:int=1,
+            max_results:int=None,
             video_id=None,
-            save_frames=True,
-            save_video=True,
-            annotate_frames=True
+            save_frames:bool=True,
+            save_video:bool=True,
+            annotate_frames:bool=True
     ):
         """Recognize facial expressions in video using `detector`."""
         data = []
@@ -292,7 +292,7 @@ class Video(object):
             raise NotImplementedError(f"{output} is not supported")
         return data
 
-    def save_video(self, outfile, fps, width, height):
+    def save_video(self, outfile, fps:int, width:int, height:int):
         if os.path.isfile(outfile):
             os.remove(outfile)
             logging.info("Deleted pre-existing {}".format(outfile))
