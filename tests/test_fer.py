@@ -52,7 +52,7 @@ class TestFER(unittest.TestCase):
         self.assertEqual(len(result), 0)
 
     @classmethod
-    def tearDownClass(self):
+    def tearDownClass(cls):
         global detector
         del detector
 
