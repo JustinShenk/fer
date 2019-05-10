@@ -3,6 +3,8 @@
 import logging
 
 import csv
+from typing import Union
+
 import cv2
 import numpy as np
 import os
@@ -42,7 +44,7 @@ class Peltarion_Emotion_Classifier(object):
 
     def predict(self, gray_face) -> list:
         """Gray face to emotions with Peltarion REST API"""
-        instance_path = os.environ.get('FLASK_INSTANCE_PATH')
+        instance_path = os.environ.get('FLASK_INSTANCE_PATH', os.getcwd())
         temp_filepath = os.path.join(instance_path, 'tmp_01.npy')
         gray_face = gray_face.reshape(48, 48, 1).astype(np.float32)
         np.save(temp_filepath, gray_face)
@@ -88,26 +90,26 @@ class Video(object):
                     max = len(face)
         return max
 
-    def to_dict(self, data):
-        max_faces = self.get_max_faces(data)
+    def to_dict(self, data:Union[dict, list]):
         emotions = []
-        for frame in data:
+
+        frame = data[0]
+        if isinstance(frame, list):
             try:
                 emotions = frame[0]['emotions'].keys()
             except IndexError:
-                pass
-        unique_columns = ['box' + str(idx) for idx in range(max_faces)] + \
-                         [emo + str(idx) for emo in emotions for idx in range(max_faces)]
+                raise Exception("No data in 'data'")
+        elif isinstance(frame, dict):
+            return data
 
-        # datadict = {column:[] for column in unique_columns}
         dictlist = []
-        for data_idx, frame in enumerate(data):
-            # for idx, face in enumerate(frame):
-            #     datadict['box' + str(idx)].append(face['box'])
-            #     [datadict[emo + str(idx)].append(score) for emo, score in face['emotions'].items()]
 
+
+        for data_idx, frame in enumerate(data):
             rowdict = {}
-            for idx, face in enumerate(frame):
+            for idx, face in enumerate(list(frame)):
+                if not isinstance(face, dict):
+                    break
                 rowdict.update({'box' + str(idx): face['box']})
                 rowdict.update({
                     emo + str(idx): face['emotions'][emo]
@@ -117,6 +119,9 @@ class Video(object):
         return dictlist
 
     def to_pandas(self, data):
+        if isinstance(data, pd.DataFrame):
+            return data
+
         datalist = self.to_dict(data)
         df = pd.DataFrame(datalist)
         if self.first_face_only:
@@ -126,6 +131,12 @@ class Video(object):
     @staticmethod
     def get_first_face(df):
         assert isinstance(df, pd.DataFrame), "Must be a pandas DataFrame"
+        try:
+            int(df.columns[0][-1])
+        except ValueError:
+            # Already only one face in df
+            return df
+
         columns = [x for x in df.columns if x[-1] is '0']
         new_columns = [x[:-1] for x in columns]
         single_df = df[columns]
@@ -138,28 +149,26 @@ class Video(object):
         return df[columns]
 
     def to_csv(self, data, filename='data.csv'):
-        key_pat = re.compile(r"^(\D+)(\d+)$")
-
         def key(item):
+            key_pat = re.compile(r"^(\D+)(\d+)$")
             m = key_pat.match(item)
             return m.group(1), int(m.group(2))
 
         dictlist = self.to_dict(data)
-        max_faces = max([len(faces) for faces in data])
         columns = set().union(*(d.keys() for d in dictlist))
-        columns.sort(key=key)  # sort by trailing number (faces)
+        columns = sorted(columns, key=key) # sort by trailing number (faces)
 
         with open('data.csv', 'w', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, columns, lineterminator='\n')
             writer.writeheader()
             writer.writerows(dictlist)
-        return True
+        return dictlist
 
     def analyze(
             self,
             detector,
             display=False,
-            output=None,
+            output="csv",
             frequency=1,
             max_results=None,
             video_id=None,
@@ -220,6 +229,7 @@ class Video(object):
                 cv2.imwrite(imgpath, frame)
 
             if display or save_video or annotate_frames:
+                assert isinstance(result, list), type(result)
                 for face in result:
                     bounding_box = face['box']
                     emotions = face['emotions']
@@ -261,7 +271,8 @@ class Video(object):
                         break
 
             frameCount += 1
-            data.append(result)
+            if result:
+                data.append(result)
             if max_results and results_nr > max_results:
                 break
 
@@ -273,12 +284,12 @@ class Video(object):
             if self.tempfile:
                 os.replace(self.tempfile, outfile)
 
-        if output is 'csv':
+        if output == 'csv':
             return self.to_csv(data)
-        elif output is 'pandas':
+        elif output == 'pandas':
             return self.to_pandas(data)
         else:
-            raise NotImplementedError()
+            raise NotImplementedError(f"{output} is not supported")
         return data
 
     def save_video(self, outfile, fps, width, height):
@@ -293,4 +304,7 @@ class Video(object):
         return videowriter
 
     def __del__(self):
-        cv2.destroyAllWindows()
+        try:
+            cv2.destroyAllWindows()
+        except:
+            pass

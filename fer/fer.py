@@ -48,7 +48,7 @@ logging.basicConfig(
     format=
     '%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
     datefmt='%d-%m-%Y:%H:%M:%S',
-    level=logging.DEBUG)
+    level=logging.INFO)
 
 
 class FER(object):
@@ -104,6 +104,7 @@ class FER(object):
             self.deployment = True
             url = os.environ.get('EMOTION_API_URL')
             token = os.environ.get('EMOTION_API_TOKEN')
+            assert url is not None and token is not None, "EMOTION_API_URL and EMOTION_API_URL must set in the environment"
             self.__emotion_classifier = Peltarion_Emotion_Classifier(
                 url, token)
             self.__emotion_target_size = (48, 48)  # Default FER image size

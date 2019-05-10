@@ -23,5 +23,7 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #SOFTWARE.
 
+from fer.fer import FER
+
 __author__ = "Justin Shenk"
-__version__ = "0.0.8"
+__version__ = "0.1.2"

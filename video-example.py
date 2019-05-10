@@ -3,13 +3,15 @@
 
 import csv
 import cv2
-from fer.fer import FER
-from fer.classes import Video
+
 import json
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import sys
+
+from fer import FER
+from fer.classes import Video
 
 if __name__ == '__main__':
     try:
@@ -19,7 +21,7 @@ if __name__ == '__main__':
     detector = FER()
     video = Video(videofile)
 
-    raw_data = video.analyze(detector, display=True)
+    raw_data = video.analyze(detector, display=False)
 
     # Convert to pandas for analysis
     df = video.to_pandas(raw_data)

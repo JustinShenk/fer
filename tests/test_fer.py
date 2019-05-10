@@ -8,9 +8,9 @@ detector = None
 
 
 class TestFER(unittest.TestCase):
-    def setUpClass():
+    def setUpClass(self):
         global detector
-        detector = FER()
+        self.detector = FER()
 
     def test_detect_emotions(self):
         """
