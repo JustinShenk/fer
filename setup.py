@@ -35,8 +35,8 @@ def readme():
         return f.read()
 
 
-if sys.version_info < (3, 4, 1):
-    sys.exit('Python < 3.4.1 is not supported!')
+if sys.version_info < (3, 6, 0):
+    sys.exit('Python < 3.6.0 is not supported!')
 
 setup(
     name='fer',
@@ -58,8 +58,6 @@ setup(
         'Intended Audience :: Education',
         'Intended Audience :: Science/Research',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],

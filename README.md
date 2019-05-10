@@ -5,16 +5,16 @@ Facial expression recognition.
 
 ![image](https://github.com/justinshenk/fer/raw/master/result.jpg)
 
-[![PyPI version](https://badge.fury.io/py/fer.svg)](https://badge.fury.io/py/fer) [![Build Status](https://travis-ci.org/justinshenk/fer.svg?branch=master)](https://travis-ci.org/justinshenk/fer)
+[![PyPI version](https://badge.fury.io/py/fer.svg)](https://badge.fury.io/py/fer) [![Build Status](https://travis-ci.org/justinshenk/fer.svg?branch=master)](https://travis-ci.org/justinshenk/fer) [![Downloads](https://pepy.tech/badge/fer)](https://pepy.tech/project/fer)
 
 INSTALLATION
 ============
 
-Currently FER only supports Python3.4 onwards. It can be installed
+Currently FER only supports Python 3.6 onwards. It can be installed
 through pip:
 
 ```bash
-$ pip3 install fer
+$ pip install fer
 ```
 
 This implementation requires OpenCV\>=3.2 and Tensorflow\>=1.7.0
@@ -23,7 +23,7 @@ installed in the system, with bindings for Python3.
 They can be installed through pip (if pip version \>= 9.0.1):
 
 ```bash
-$ pip3 install tensorflow>=1.7 opencv-contrib-python==3.3.0.9
+$ pip install tensorflow>=1.7 opencv-contrib-python==3.3.0.9
 ```
 
 or compiled directly from sources
@@ -35,7 +35,7 @@ is available on the system, which will speedup the results. It can be
 installed with pip:
 
 ```bash
-$ pip3 install tensorflow-gpu\>=1.7.0
+$ pip install tensorflow-gpu\>=1.7.0
 ```
 
 USAGE
@@ -80,6 +80,17 @@ Other good examples of usage can be found in the files
 [example.py](example.py) and [video-example.py](video-example.py)
 located in the root of this repository.
 
+PELTARION API
+=============
+
+Add the API URL as an `emotion_model` argument to `FER()`:
+
+```
+detector = FER(emotion_model=MY_API_URL)
+```
+
+FER will then pick up the URL and token from the environment as `EMOTION_API_URL` and `EMOTION_API_TOKEN`.
+
 MODEL
 =====
 
@@ -105,3 +116,7 @@ repo](https://github.com/oarriaga/face_classification/).
 
 REFERENCE
 ---------
+
+FER 2013 dataset curated by Pierre Luc Carrier and Aaron Courville, described in:
+
+"Challenges in Representation Learning: A report on three machine learning contests," by Ian J. Goodfellow, Dumitru Erhan, Pierre Luc Carrier, Aaron Courville, Mehdi Mirza, Ben Hamner, Will Cukierski, Yichuan Tang, David Thaler, Dong-Hyun Lee, Yingbo Zhou, Chetan Ramaiah, Fangxiang Feng, Ruifan Li, Xiaojie Wang, Dimitris Athanasakis, John Shawe-Taylor, Maxim Milakov, John Park, Radu Ionescu, Marius Popescu, Cristian Grozea, James Bergstra, Jingjing Xie, Lukasz Romaszko, Bing Xu, Zhang Chuang, and Yoshua Bengio, [arXiv:1307.0414](https://arxiv.org/abs/1307.0414).
