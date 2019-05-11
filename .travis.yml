@@ -25,6 +25,7 @@ deploy:
   provider: pypi
   user: jshenk
   skip_cleanup: true
+  skip_existing: true
   on:
     tags: true
     branch: master
