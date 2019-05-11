@@ -1,6 +1,7 @@
 matplotlib
 tensorflow
-opencv-contrib-python==3.3.0.9
+opencv-python
+opencv-contrib-python
 keras
 pandas
 Pillow
