@@ -1,6 +1,8 @@
 import unittest
 import cv2
+import pandas as pd
 
+from fer.classes import Video
 from fer.exceptions import InvalidImage
 from fer.fer import FER
 
@@ -50,6 +52,22 @@ class TestFER(unittest.TestCase):
 
         result = detector.detect_emotions(justin)  # type: list
         self.assertEqual(len(result), 0)
+
+    def test_video(self):
+        detector = FER()
+        video = Video("tests/woman2.mp4")
+
+        raw_data = video.analyze(detector, display=False)
+        assert isinstance(raw_data, list)
+
+        # Convert to pandas for analysis
+        df = video.to_pandas(raw_data)
+        assert isinstance(df, pd.DataFrame)
+        assert 'angry' in df
+        df = video.get_first_face(df)
+        assert isinstance(df, pd.DataFrame)
+        df = video.get_emotions(df)
+        assert isinstance(df, pd.DataFrame)
 
     @classmethod
     def tearDownClass(cls):

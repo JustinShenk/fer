@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-import csv
-import cv2
-
-import json
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -21,6 +16,7 @@ if __name__ == '__main__':
     detector = FER()
     video = Video(videofile)
 
+    # Output list of dictionaries
     raw_data = video.analyze(detector, display=False)
 
     # Convert to pandas for analysis

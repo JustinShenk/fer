@@ -62,7 +62,9 @@ For recognizing facial expressions in video, the `Video` class splits video into
 ```python
 from fer.classes import Video
 
+video_filename = "tests/woman2.mp4"
 video = Video(video_filename)
+
 # Analyze video, displaying the output
 raw_data = video.analyze(detector, display=True)
 df = video.to_pandas(raw_data)
