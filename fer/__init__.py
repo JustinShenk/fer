@@ -26,4 +26,4 @@
 from fer.fer import FER
 
 __author__ = "Justin Shenk"
-__version__ = "0.1.2"
+__version__ = "0.1.3"
