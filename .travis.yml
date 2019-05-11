@@ -10,9 +10,9 @@ addons:
       - libglib2.0-0
 before_install:
 - sudo apt-get -qq update
-- sudo apt-get install -y libglib2.0-0
-- pip install -r requirements.txt
+- sudo apt-get install -y libglib2.0-0 libsm6 libxrender1 libfontconfig1
 install:
+- pip install -r requirements.txt
 - pip install .
 before_script:
 - pip install nose coverage
