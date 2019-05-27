@@ -11,7 +11,6 @@ import os
 import pandas as pd
 import re
 import requests
-import tempfile
 import time
 
 logging.getLogger(__name__)

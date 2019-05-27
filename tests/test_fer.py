@@ -2,9 +2,9 @@ import unittest
 import cv2
 import pandas as pd
 
-from fer.classes import Video
+from fer import Video
 from fer.exceptions import InvalidImage
-from fer.fer import FER
+from fer import FER
 
 detector = None
 
@@ -52,6 +52,17 @@ class TestFER(unittest.TestCase):
 
         result = detector.detect_emotions(justin)  # type: list
         self.assertEqual(len(result), 0)
+
+    def test_top_emotion(self):
+        """
+        FER successfully returns tuple of string and float for first face.
+        :return:
+        """
+        justin = cv2.imread("justin.jpg")
+
+        top_emotion, score = detector.top_emotion(justin)  # type: tuple
+        self.assertIsInstance(top_emotion, str)
+        self.assertIsInstance(float(score), float)
 
     def test_video(self):
         detector = FER()

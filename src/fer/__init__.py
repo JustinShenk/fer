@@ -24,6 +24,19 @@
 #SOFTWARE.
 
 from fer.fer import FER
+from fer.classes import Video
+
+__version__ = "19.0.0"
+
+__title__ = "fer"
+__description__ = "Facial expression recognition from images"
+__url__ = "https://github.com/justinshenk/fer"
+__uri__ = __url__
+__doc__ = __description__ + " <" + __url__ + ">"
 
 __author__ = "Justin Shenk"
-__version__ = "0.1.3"
+__email__ = "shenkjustin@gmail.com"
+
+__license__ = "MIT"
+__copyright__ = "Copyright (c) 2019 " + __author__
+

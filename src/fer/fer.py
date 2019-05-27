@@ -26,12 +26,13 @@
 import logging
 # IMPORTANT:
 #
-# This code is derived from Iván de Paz Centeno's implentation of MTCNN
+# This code is derived from Iván de Paz Centeno's implementation of MTCNN
 # (https://github.com/ipazc/mtcnn/) and Octavia Arriaga's facial expression recognition repo
 # (https://github.com/oarriaga/face_classification).
 #
 import os
 import sys
+from collections import OrderedDict
 
 import cv2
 import numpy as np
@@ -182,7 +183,7 @@ class FER(object):
             6: 'neutral'
         }
 
-    def detect_emotions(self, img) -> list:
+    def detect_emotions(self, img:np.ndarray) -> list:
         """
         Detects bounding boxes from the specified image with ranking of emotions.
         :param img: image to process
@@ -227,11 +228,29 @@ class FER(object):
             else:
                 raise NotImplemented()
 
-            emotions.append({
-                'box': face_coordinates,
-                'emotions': labelled_emotions
-            })
+            emotions.append(OrderedDict(
+                box = face_coordinates,
+                emotions= labelled_emotions
+            ))
+
+        self.emotions = emotions
+
         return emotions
+
+    def top_emotion(self, img:np.ndarray):
+        """Convenience wrapper for `detect_emotions` returning only top emotion for first face in frame.
+        :param img: image to process
+        :return: top emotion and score (for first face in frame)
+
+        """
+        emotions = self.detect_emotions(img=img)
+        top_emotions = [max(e['emotions'], key=lambda key: e['emotions'][key]) for e in emotions]
+
+        # Take first face
+        top_emotion = top_emotions[0]
+        score = emotions[0]['emotions'][top_emotion]
+
+        return top_emotion, score
 
 
 def parse_arguments(args):
@@ -241,15 +260,15 @@ def parse_arguments(args):
     return parser.parse_args()
 
 
-def inference():
+def top_emotion():
     args = parse_arguments(sys.argv)
     fer = FER()
-    inference = fer.detect_emotion(args.image)
-    print(inference)
+    top_emotion, score = fer.top_emotion(args.image)
+    print(top_emotion, score)
 
 
-def main(args=None):
-    pass
+def main():
+    top_emotion()
 
 
 if __name__ == '__main__':

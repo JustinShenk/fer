@@ -60,12 +60,14 @@ Sample output:
 For recognizing facial expressions in video, the `Video` class splits video into frames. It can use a local Keras model (default) or Peltarion API for the backend:
 
 ```python
-from fer.classes import Video
+from fer import Video
+from fer import FER
 
 video_filename = "tests/woman2.mp4"
 video = Video(video_filename)
 
 # Analyze video, displaying the output
+detector = FER()
 raw_data = video.analyze(detector, display=True)
 df = video.to_pandas(raw_data)
 ```
