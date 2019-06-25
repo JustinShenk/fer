@@ -53,7 +53,7 @@ class Peltarion_Emotion_Classifier(object):
         try:
             emotion = response['emotion']
         except:
-            logging.error(f"{response.text} is not a valid response")
+            logging.error(f"{response.data} is not a valid response")
         return emotion
 
 
