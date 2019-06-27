@@ -1,5 +1,5 @@
 include */haarcascade_frontalface_default.xml
-include */data/emotion_model.hdf5
+include */emotion_model.hdf5
 include requirements.txt
 include AUTHORS
 include VERSION
