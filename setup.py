@@ -109,7 +109,6 @@ setup(
     extras_require=EXTRAS_REQUIRE,
     python_requires=PYTHON_REQUIRES,
     include_package_data=True,
-    pcakge_data={"": ["*.hdf5"],"": ["*.xml"]},
     package_dir={"": "src"},
     zip_safe=False,
 )

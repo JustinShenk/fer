@@ -3,15 +3,16 @@
 import logging
 
 import csv
+import os
+import re
+import requests
+import time
 from typing import Union, List
 
 import cv2
 import numpy as np
-import os
 import pandas as pd
-import re
-import requests
-import time
+import tensorflow as tf
 
 logging.getLogger(__name__)
 
@@ -206,74 +207,77 @@ class Video(object):
         if save_video:
             videowriter = self.save_video(outfile, fps, width, height)
 
-        while self.cap.isOpened():
-            start_time = time.time()
-            ret, frame = self.cap.read()
-            if not ret:  # end of video
-                break
-            if frameCount % frequency != 0:
+        init = tf.global_variables_initializer()
+        with tf.Session() as sess:
+            sess.run(init)
+            while self.cap.isOpened():
+                start_time = time.time()
+                ret, frame = self.cap.read()
+                if not ret:  # end of video
+                    break
+                if frameCount % frequency != 0:
+                    frameCount += 1
+                    continue
+                padded_frame = detector.pad(frame)
+                try:
+                        result = detector.detect_emotions(padded_frame)
+                except Exception as e:
+                    logging.error(e)
+                    break
+
+                # Save images to `self.outdir`
+                imgpath = os.path.join(
+                    self.outdir, (video_id or root) + str(frameCount) + '.jpg')
+                if save_frames and not annotate_frames:
+                    cv2.imwrite(imgpath, frame)
+
+                if display or save_video or annotate_frames:
+                    assert isinstance(result, list), type(result)
+                    for face in result:
+                        bounding_box = face['box']
+                        emotions = face['emotions']
+
+                        cv2.rectangle(frame,
+                                      (bounding_box[0] - 40, bounding_box[1] - 40),
+                                      (bounding_box[0] - 40 + bounding_box[2],
+                                       bounding_box[1] - 40 + bounding_box[3]),
+                                      (0, 155, 255), 2)
+
+                        for idx, (emotion, score) in enumerate(emotions.items()):
+                            color = (211, 211, 211) if score < 0.01 else (0, 255,
+                                                                          0)
+                            emotion_score = "{}: {}".format(
+                                emotion, "{:.2f}".format(score)
+                                if score > 0.01 else "")
+                            cv2.putText(frame, emotion_score,
+                                        (bounding_box[0] - 40, bounding_box[1] - 40
+                                         + bounding_box[3] + 30 + idx * 15),
+                                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1,
+                                        cv2.LINE_AA)
+                        if display:
+                            cv2.imshow('Video', frame)
+                        if save_frames and annotate_frames:
+                            cv2.imwrite(imgpath, frame)
+                        if save_video:
+                            videowriter.write(frame)
+                        results_nr += 1
+
+                    if display or save_video:
+                        remaining_duration = max(
+                            1,
+                            int((time.time() - start_time) * 1000 -
+                                capture_duration))
+                        if cv2.waitKey(remaining_duration) & 0xFF == ord('q'):
+                            break
+                    else:
+                        if cv2.waitKey(1) & 0xFF == ord('q'):
+                            break
+
                 frameCount += 1
-                continue
-            padded_frame = detector.pad(frame)
-            try:
-                result = detector.detect_emotions(padded_frame)
-            except Exception as e:
-                logging.error(e)
-                break
-
-            # Save images to `self.outdir`
-            imgpath = os.path.join(
-                self.outdir, (video_id or root) + str(frameCount) + '.jpg')
-            if save_frames and not annotate_frames:
-                cv2.imwrite(imgpath, frame)
-
-            if display or save_video or annotate_frames:
-                assert isinstance(result, list), type(result)
-                for face in result:
-                    bounding_box = face['box']
-                    emotions = face['emotions']
-
-                    cv2.rectangle(frame,
-                                  (bounding_box[0] - 40, bounding_box[1] - 40),
-                                  (bounding_box[0] - 40 + bounding_box[2],
-                                   bounding_box[1] - 40 + bounding_box[3]),
-                                  (0, 155, 255), 2)
-
-                    for idx, (emotion, score) in enumerate(emotions.items()):
-                        color = (211, 211, 211) if score < 0.01 else (0, 255,
-                                                                      0)
-                        emotion_score = "{}: {}".format(
-                            emotion, "{:.2f}".format(score)
-                            if score > 0.01 else "")
-                        cv2.putText(frame, emotion_score,
-                                    (bounding_box[0] - 40, bounding_box[1] - 40
-                                     + bounding_box[3] + 30 + idx * 15),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1,
-                                    cv2.LINE_AA)
-                    if display:
-                        cv2.imshow('Video', frame)
-                    if save_frames and annotate_frames:
-                        cv2.imwrite(imgpath, frame)
-                    if save_video:
-                        videowriter.write(frame)
-                    results_nr += 1
-
-                if display or save_video:
-                    remaining_duration = max(
-                        1,
-                        int((time.time() - start_time) * 1000 -
-                            capture_duration))
-                    if cv2.waitKey(remaining_duration) & 0xFF == ord('q'):
-                        break
-                else:
-                    if cv2.waitKey(1) & 0xFF == ord('q'):
-                        break
-
-            frameCount += 1
-            if result:
-                data.append(result)
-            if max_results and results_nr > max_results:
-                break
+                if result:
+                    data.append(result)
+                if max_results and results_nr > max_results:
+                    break
 
         self.cap.release()
         if display or save_video:
