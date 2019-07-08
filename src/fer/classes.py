@@ -7,7 +7,7 @@ import os
 import re
 import requests
 import time
-from typing import Union, List
+from typing import Union, List, Optional
 
 import cv2
 import numpy as np
@@ -169,8 +169,9 @@ class Video(object):
             detector,
             display:bool=False,
             output:str="csv",
-            frequency:int=1,
+            frequency:Optional[int]=None,
             max_results:int=None,
+            save_fps=None,
             video_id=None,
             save_frames:bool=True,
             save_video:bool=True,
@@ -178,7 +179,11 @@ class Video(object):
     ):
         """Recognize facial expressions in video using `detector`."""
         data = []
-        frequency = int(frequency)
+        if frequency is None:
+            frequency = 1
+        else:
+            frequency = int(frequency)
+
         results_nr = 0
 
         # Open video
@@ -194,6 +199,12 @@ class Video(object):
         fps = self.cap.get(cv2.CAP_PROP_FPS)
         length = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
         assert fps and length, "File {} not loaded".format(self.filepath)
+
+        if save_fps is not None:
+            frequency = fps // save_fps
+            logging.info("Saving every {} frames".format(
+                frequency))
+
         logging.info("{:.2f} fps, {} frames, {:.2f} seconds".format(
             fps, length, length / fps))
 
@@ -220,7 +231,7 @@ class Video(object):
                     continue
                 padded_frame = detector.pad(frame)
                 try:
-                        result = detector.detect_emotions(padded_frame)
+                    result = detector.detect_emotions(padded_frame)
                 except Exception as e:
                     logging.error(e)
                     break
