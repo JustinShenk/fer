@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import matplotlib
-matplotlib.use('Agg')
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import sys
 
 from fer import FER
 from fer.classes import Video
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         videofile = sys.argv[1]
     except:
-        videofile = 'test.mp4'
+        videofile = "test.mp4"
     detector = FER()
     video = Video(videofile)
 

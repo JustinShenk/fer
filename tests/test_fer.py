@@ -10,7 +10,6 @@ detector = None
 
 
 class TestFER(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         global detector
@@ -29,9 +28,9 @@ class TestFER(unittest.TestCase):
 
         first = result[0]
 
-        self.assertIn('box', first)
-        self.assertIn('emotions', first)
-        self.assertTrue(len(first['box']), 1)
+        self.assertIn("box", first)
+        self.assertIn("emotions", first)
+        self.assertTrue(len(first["box"]), 1)
 
     def test_detect_faces_invalid_content(self):
         """
@@ -74,7 +73,7 @@ class TestFER(unittest.TestCase):
         # Convert to pandas for analysis
         df = video.to_pandas(raw_data)
         assert isinstance(df, pd.DataFrame)
-        assert 'angry' in df
+        assert "angry" in df
         df = video.get_first_face(df)
         assert isinstance(df, pd.DataFrame)
         df = video.get_emotions(df)
@@ -85,5 +84,5 @@ class TestFER(unittest.TestCase):
         del detector
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
