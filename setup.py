@@ -65,6 +65,7 @@ INSTALL_REQUIRES = [
     "opencv-contrib-python",
     "keras",
     "pandas",
+    "requests"
 ]
 EXTRAS_REQUIRE = {"docs": ["sphinx"], "tests": ["coverage", "pytest"]}
 EXTRAS_REQUIRE["dev"] = (
