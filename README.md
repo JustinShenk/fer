@@ -44,17 +44,17 @@ USAGE
 The following example illustrates the ease of use of this package:
 
 ```python
-from fer.fer import FER
+from fer import FER
 import cv2
 
 img = cv2.imread("justin.jpg")
 detector = FER()
-print(detector.detect_emotions(img))
+detector.detect_emotions(img)
 ```
 
 Sample output:
 ```
-[{'box': [277, 90, 48, 63], 'emotions': {'angry': 0.02, 'disgust': 0.0, 'fear': 0.05, 'happy': 0.16, 'neutral': 0.09, 'sad': 0.27, 'surprise': 0.41}]
+OrderedDict([{'box': [277, 90, 48, 63], 'emotions': {'angry': 0.02, 'disgust': 0.0, 'fear': 0.05, 'happy': 0.16, 'neutral': 0.09, 'sad': 0.27, 'surprise': 0.41}])
 ```
 
 Just want the top emotion? Try:
@@ -63,6 +63,16 @@ Just want the top emotion? Try:
 emotion, score = detector.top_emotion(img) # 'happy', 0.99
 ```
 
+#### MTCNN Facial Recognition
+
+Faces by default are detected using OpenCV's Haar Cascade classifier. To use the more accurate MTCNN network, 
+add the parameter:
+
+```python
+detector = FER(mtcnn=True)
+```
+ 
+#### Video
 For recognizing facial expressions in video, the `Video` class splits video into frames. It can use a local Keras model (default) or Peltarion API for the backend:
 
 ```python
@@ -73,7 +83,7 @@ video_filename = "tests/woman2.mp4"
 video = Video(video_filename)
 
 # Analyze video, displaying the output
-detector = FER()
+detector = FER(mtcnn=True)
 raw_data = video.analyze(detector, display=True)
 df = video.to_pandas(raw_data)
 ```

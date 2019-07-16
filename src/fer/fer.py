@@ -166,6 +166,24 @@ class FER(object):
         row, col = image.shape[:2]
         return image[40 : row - 40, 40 : col - 40]
 
+    @staticmethod
+    def tosquare(bbox):
+        """Convert bounding box to square by elongating shorter side."""
+        x, y, w, h = bbox
+        if h > w:
+            diff = h - w
+            x -= diff // 2
+            w += diff
+        elif w > h:
+            diff = w - h
+            y -= diff // 2
+            h += diff
+        if w!=h:
+            logging.debug(f"{w} is not {h}")
+
+        return (x, y, w, h)
+
+
     def find_faces(self, img):
         if isinstance(self.__face_detector, cv2.CascadeClassifier):
             gray_image_array = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -179,6 +197,7 @@ class FER(object):
         elif self.__face_detector == "mtcnn":
             results = self._mtcnn.detect_faces(img)
             faces = [x["box"] for x in results]
+
         return faces
 
     @staticmethod
@@ -224,8 +243,17 @@ class FER(object):
 
         emotions = []
         for face_coordinates in face_rectangles:
+            face_coordinates = self.tosquare(face_coordinates)
             x1, x2, y1, y2 = self.__apply_offsets(face_coordinates)
+
+            if y1 < 0 or x1 < 0:
+                gray_img = self.pad(gray_img)
+                x1 += 40; x2 += 40; y1 += 40; y2 += 40
+                x1 = np.clip(x1, a_min=0)
+                y1 = np.clip(y1, a_min=0)
+
             gray_face = gray_img[y1:y2, x1:x2]
+
             try:
                 gray_face = cv2.resize(gray_face, self.__emotion_target_size)
             except Exception as e:
@@ -278,7 +306,7 @@ class FER(object):
         return top_emotion, score
 
     def __del__(self):
-        print("Closing session")
+        logging.info("Closing session")
         self.__session.close()
 
 

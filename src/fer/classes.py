@@ -212,10 +212,10 @@ class Video(object):
         )
 
         capture_duration = 1000 / fps
+
         if save_frames:
             os.makedirs(self.outdir, exist_ok=True)
-
-        root, ext = os.path.splitext(self.filepath)
+        root, ext = os.path.splitext(os.path.basename(self.filepath))
         outfile = os.path.join(self.outdir, f"{root}_output{ext}")
 
         if save_video:
@@ -312,11 +312,12 @@ class Video(object):
         self.cap.release()
         if display or save_video:
             videowriter.release()
-            logging.info(
-                "Completed analysis: saved to {}".format(self.tempfile or outfile)
-            )
-            if self.tempfile:
-                os.replace(self.tempfile, outfile)
+            if save_video:
+                logging.info(
+                    "Completed analysis: saved to {}".format(self.tempfile or outfile)
+                )
+                if self.tempfile:
+                    os.replace(self.tempfile, outfile)
 
         if output == "csv":
             return self.to_csv(data)
