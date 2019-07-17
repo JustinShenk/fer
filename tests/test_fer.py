@@ -12,22 +12,27 @@ detector = None
 class TestFER(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        global detector
+        global detector, mtcnn_detector
         detector = FER()
+        mtcnn_detector = FER(mtcnn=True)
 
     def test_detect_emotions(self):
         """
-        FER is able to detect faces image
+        FER is able to detect faces in an image
         :return:
         """
         justin = cv2.imread("justin.jpg")
 
         result = detector.detect_emotions(justin)  # type: list
+        mtcnn_result = mtcnn_detector.detect_emotions(justin)  # type: list
 
         self.assertEqual(len(result), 1)
 
         first = result[0]
+        mtcnn_first = mtcnn_result[0]
 
+        self.assertGreater(first['emotions']['happy'], 0.9)
+        self.assertGreater(mtcnn_first['emotions']['happy'], 0.9)
         self.assertIn("box", first)
         self.assertIn("emotions", first)
         self.assertTrue(len(first["box"]), 1)
@@ -72,6 +77,7 @@ class TestFER(unittest.TestCase):
 
         # Convert to pandas for analysis
         df = video.to_pandas(raw_data)
+        assert sum(df.neutral[:5] > 0.5) == 5, f"Expected neutral > 0.5, got {df.neutral[:5]}"
         assert isinstance(df, pd.DataFrame)
         assert "angry" in df
         df = video.get_first_face(df)
