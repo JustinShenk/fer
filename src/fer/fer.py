@@ -65,9 +65,10 @@ class FER(object):
         cascade_file: str = None,
         mtcnn=False,
         emotion_model: str = None,
-        scale_factor: float = 1.3,
-        min_face_size: int = 40,
-        offsets: tuple = (20, 40),
+        scale_factor: float = 1.1,
+        min_face_size: int = 50,
+        min_neighbors: int = 6,
+        offsets: tuple = (10, 10),
         compile: bool = False,
     ):
         """
@@ -81,6 +82,7 @@ class FER(object):
         :param compile: value for Keras `compile` argument
         """
         self.__scale_factor = scale_factor
+        self.__min_neighbors = min_neighbors
         self.__min_face_size = min_face_size
         self.__offsets = offsets
 
@@ -132,16 +134,6 @@ class FER(object):
             raise Exception(f"{emotion_model} is not a valid type")
         logging.debug("Emotion model: {}".format(emotion_model))
 
-    @property
-    def min_face_size(self):
-        return self.__min_face_size
-
-    @min_face_size.setter
-    def min_face_size(self, mfc=50):
-        try:
-            self.__min_face_size = int(mfc)
-        except ValueError:
-            self.__min_face_size = 50
 
     @staticmethod
     def pad(image):
@@ -184,14 +176,19 @@ class FER(object):
         return (x, y, w, h)
 
 
-    def find_faces(self, img):
+    def find_faces(self, img:np.ndarray, bgr=True) -> list:
+        """Image to list of faces bounding boxes(x,y,w,h)"""
         if isinstance(self.__face_detector, cv2.CascadeClassifier):
-            gray_image_array = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            if bgr:
+                gray_image_array = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            else: # assume gray
+                gray_image_array = img
+
             faces = self.__face_detector.detectMultiScale(
                 gray_image_array,
                 scaleFactor=self.__scale_factor,
-                minNeighbors=5,
-                flags=0,
+                minNeighbors=self.__min_neighbors,
+                flags=cv2.CASCADE_SCALE_IMAGE,
                 minSize=(self.__min_face_size, self.__min_face_size),
             )
         elif self.__face_detector == "mtcnn":
@@ -201,7 +198,7 @@ class FER(object):
         return faces
 
     @staticmethod
-    def __preprocess_input(x, v2=True):
+    def __preprocess_input(x, v2=False):
         x = x.astype("float32")
         x = x / 255.0
         if v2:
@@ -229,7 +226,7 @@ class FER(object):
     def detect_emotions(self, img: np.ndarray) -> list:
         """
         Detects bounding boxes from the specified image with ranking of emotions.
-        :param img: image to process
+        :param img: image to process (BGR or gray)
         :return: list containing all the bounding boxes detected with their emotions.
         """
         if img is None or not hasattr(img, "shape"):
@@ -237,7 +234,7 @@ class FER(object):
 
         emotion_labels = self._get_labels()
 
-        face_rectangles = self.find_faces(img)
+        face_rectangles = self.find_faces(img, bgr=True)
 
         gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -304,10 +301,6 @@ class FER(object):
         score = emotions[0]["emotions"][top_emotion]
 
         return top_emotion, score
-
-    def __del__(self):
-        logging.info("Closing session")
-        self.__session.close()
 
 
 def parse_arguments(args):

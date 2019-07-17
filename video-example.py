@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import sys
 
 from fer import FER
-from fer.classes import Video
+from fer import Video
 
 if __name__ == "__main__":
     try:
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     video = Video(videofile)
 
     # Output list of dictionaries
-    raw_data = video.analyze(detector, display=False)
+    raw_data = video.analyze(detector, display=True)
 
     # Convert to pandas for analysis
     df = video.to_pandas(raw_data)
