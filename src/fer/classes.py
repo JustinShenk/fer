@@ -271,11 +271,7 @@ class Video(object):
                             emotion_score,
                             (
                                 bounding_box[0] - 40,
-                                bounding_box[1]
-                                - 40
-                                + bounding_box[3]
-                                + 30
-                                + idx * 15,
+                                bounding_box[1] - 40 + bounding_box[3] + 30 + idx * 15,
                             ),
                             cv2.FONT_HERSHEY_SIMPLEX,
                             0.5,

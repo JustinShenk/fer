@@ -134,7 +134,6 @@ class FER(object):
             raise Exception(f"{emotion_model} is not a valid type")
         logging.debug("Emotion model: {}".format(emotion_model))
 
-
     @staticmethod
     def pad(image):
         row, col = image.shape[:2]
@@ -170,18 +169,17 @@ class FER(object):
             diff = w - h
             y -= diff // 2
             h += diff
-        if w!=h:
+        if w != h:
             logging.debug(f"{w} is not {h}")
 
         return (x, y, w, h)
 
-
-    def find_faces(self, img:np.ndarray, bgr=True) -> list:
+    def find_faces(self, img: np.ndarray, bgr=True) -> list:
         """Image to list of faces bounding boxes(x,y,w,h)"""
         if isinstance(self.__face_detector, cv2.CascadeClassifier):
             if bgr:
                 gray_image_array = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            else: # assume gray
+            else:  # assume gray
                 gray_image_array = img
 
             faces = self.__face_detector.detectMultiScale(
@@ -245,7 +243,10 @@ class FER(object):
 
             if y1 < 0 or x1 < 0:
                 gray_img = self.pad(gray_img)
-                x1 += 40; x2 += 40; y1 += 40; y2 += 40
+                x1 += 40
+                x2 += 40
+                y1 += 40
+                y2 += 40
                 x1 = np.clip(x1, a_min=0)
                 y1 = np.clip(y1, a_min=0)
 
