@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import cv2
-from fer.fer import FER
 
-detector = FER()
+from fer import FER
+
+detector = FER() # or with mtcnn=True
 
 image = cv2.imread("justin.jpg")
 result = detector.detect_emotions(image)
