@@ -7,12 +7,11 @@ import os
 import re
 import requests
 import time
-from typing import Union, List, Optional
+from typing import Union, Optional
 
 import cv2
 import numpy as np
 import pandas as pd
-import tensorflow as tf
 
 logging.getLogger(__name__)
 
@@ -32,7 +31,7 @@ class Peltarion_Emotion_Classifier(object):
         self.shape = shape
 
     @staticmethod
-    def unnormalize_face(
+    def _unnormalize_face(
         gray_face: np.ndarray, shape: tuple = (48, 48), v2: bool = True
     ) -> object:
         gray_face = gray_face.reshape(shape)
@@ -60,7 +59,7 @@ class Peltarion_Emotion_Classifier(object):
 
 class Video(object):
     def __init__(
-        self, video_file, outdir="output", first_face_only=True, tempfile=None
+        self, video_file:str, outdir:str="output", first_face_only:bool=True, tempfile:Optional[str]=None
     ):
         """Video class for extracting and saving frames for emotion detection.
         :param video_file - str
@@ -85,7 +84,8 @@ class Video(object):
         self.filename = "".join(self.filepath.split("/")[-1])
 
     @staticmethod
-    def get_max_faces(data: list):
+    def get_max_faces(data: list) -> int:
+        """Get max number of faces detected in a series of frames, eg 3"""
         max = 0
         for frame in data:
             for face in frame:
@@ -93,7 +93,8 @@ class Video(object):
                     max = len(face)
         return max
 
-    def to_dict(self, data: Union[dict, list]) -> dict:
+    @staticmethod
+    def _to_dict(data: Union[dict, list]) -> dict:
         emotions = []
 
         frame = data[0]
@@ -123,7 +124,7 @@ class Video(object):
         if isinstance(data, pd.DataFrame):
             return data
 
-        datalist = self.to_dict(data)
+        datalist = self._to_dict(data)
         df = pd.DataFrame(datalist)
         if self.first_face_only:
             df = self.get_first_face(df)
@@ -150,12 +151,13 @@ class Video(object):
         return df[columns]
 
     def to_csv(self, data, filename="data.csv"):
+        """Save data to csv"""
         def key(item):
             key_pat = re.compile(r"^(\D+)(\d+)$")
             m = key_pat.match(item)
             return m.group(1), int(m.group(2))
 
-        dictlist = self.to_dict(data)
+        dictlist = self._to_dict(data)
         columns = set().union(*(d.keys() for d in dictlist))
         columns = sorted(columns, key=key)  # sort by trailing number (faces)
 
@@ -167,13 +169,13 @@ class Video(object):
 
     def analyze(
         self,
-        detector,
+        detector, # fer.FER instance
         display: bool = False,
         output: str = "csv",
         frequency: Optional[int] = None,
         max_results: int = None,
-        save_fps=None,
-        video_id=None,
+        save_fps: Optional[bool]=None,
+        video_id: Optional[str]=None,
         save_frames: bool = True,
         save_video: bool = True,
         annotate_frames: bool = True,
@@ -219,7 +221,7 @@ class Video(object):
         outfile = os.path.join(self.outdir, f"{root}_output{ext}")
 
         if save_video:
-            videowriter = self.save_video(outfile, fps, width, height)
+            videowriter = self._save_video(outfile, fps, width, height)
 
         while self.cap.isOpened():
             start_time = time.time()
@@ -321,7 +323,7 @@ class Video(object):
             raise NotImplementedError(f"{output} is not supported")
         return data
 
-    def save_video(self, outfile, fps: int, width: int, height: int):
+    def _save_video(self, outfile:str, fps: int, width: int, height: int):
         if os.path.isfile(outfile):
             os.remove(outfile)
             logging.info("Deleted pre-existing {}".format(outfile))

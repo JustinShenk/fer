@@ -85,6 +85,7 @@ class TestFER(unittest.TestCase):
         df = video.get_emotions(df)
         assert isinstance(df, pd.DataFrame)
 
+
     def tearDownClass():
         global detector
         del detector
