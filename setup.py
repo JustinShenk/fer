@@ -61,7 +61,7 @@ CLASSIFIERS = [
 PYTHON_REQUIRES = ">= 3.6"
 INSTALL_REQUIRES = [
     "matplotlib",
-    "tensorflow",
+    "tensorflow>=1.14",
     "opencv-contrib-python",
     "keras",
     "pandas",
