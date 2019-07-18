@@ -247,8 +247,8 @@ class FER(object):
                 x2 += 40
                 y1 += 40
                 y2 += 40
-                x1 = np.clip(x1, a_min=0)
-                y1 = np.clip(y1, a_min=0)
+                x1 = np.clip(x1, a_min=0, a_max=None)
+                y1 = np.clip(y1, a_min=0, a_max=None)
 
             gray_face = gray_img[y1:y2, x1:x2]
 
