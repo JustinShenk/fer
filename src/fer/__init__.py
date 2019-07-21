@@ -26,7 +26,7 @@
 from fer.fer import FER
 from fer.classes import Video
 
-__version__ = "19.0.5.dev2"
+__version__ = "19.0.6"
 
 __title__ = "fer"
 __description__ = "Facial expression recognition from images"
