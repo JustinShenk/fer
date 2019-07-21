@@ -16,14 +16,6 @@ import pandas as pd
 logging.getLogger(__name__)
 
 
-def tocap(func):
-    def wrapper(*args, **kwargs):
-        result = func(*args, **kwargs)
-        return Video(result)
-
-    return wrapper
-
-
 class Peltarion_Emotion_Classifier(object):
     def __init__(self, url, token, shape=(48, 48)):
         self.url = url
@@ -121,6 +113,7 @@ class Video(object):
         return dictlist
 
     def to_pandas(self, data: Union[pd.DataFrame, list]) -> pd.DataFrame:
+        """Convert results to pandas DataFrame"""
         if isinstance(data, pd.DataFrame):
             return data
 
@@ -147,6 +140,7 @@ class Video(object):
 
     @staticmethod
     def get_emotions(df: pd.DataFrame) -> list:
+        """Get emotion columsn from results."""
         columns = [x for x in df.columns if "box" not in x]
         return df[columns]
 

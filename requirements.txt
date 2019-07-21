@@ -1,8 +1,8 @@
 matplotlib
-tensorflow
+tensorflow>=1.14
 opencv-python
 opencv-contrib-python
-keras
 pandas
 Pillow
 requests
+mtcnn

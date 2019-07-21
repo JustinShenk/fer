@@ -67,7 +67,7 @@ class FER(object):
         emotion_model: str = None,
         scale_factor: float = 1.1,
         min_face_size: int = 50,
-        min_neighbors: int = 6,
+        min_neighbors: int = 5,
         offsets: tuple = (10, 10),
         compile: bool = False,
     ):

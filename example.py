@@ -5,7 +5,7 @@ import cv2
 
 from fer import FER
 
-detector = FER() # or with mtcnn=True
+detector = FER(mtcnn=True) # or with mtcnn=False for Haar Cascade Classifier
 
 image = cv2.imread("justin.jpg")
 result = detector.detect_emotions(image)
