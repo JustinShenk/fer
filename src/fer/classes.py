@@ -117,6 +117,8 @@ class Video(object):
         if isinstance(data, pd.DataFrame):
             return data
 
+        if not len(data):
+            return None
         datalist = self._to_dict(data)
         df = pd.DataFrame(datalist)
         if self.first_face_only:
@@ -228,7 +230,8 @@ class Video(object):
 
             padded_frame = detector.pad(frame)
             try:
-                result = detector.detect_emotions(padded_frame)
+                # Get faces with emotions
+                faces = detector.detect_emotions(padded_frame)
             except Exception as e:
                 logging.error(e)
                 break
@@ -241,8 +244,8 @@ class Video(object):
                 cv2.imwrite(imgpath, frame)
 
             if display or save_video or annotate_frames:
-                assert isinstance(result, list), type(result)
-                for face in result:
+                assert isinstance(faces, list), type(faces)
+                for face in faces:
                     bounding_box = face["box"]
                     emotions = face["emotions"]
 
@@ -294,8 +297,8 @@ class Video(object):
                         break
 
             frameCount += 1
-            if result:
-                data.append(result)
+            if faces:
+                data.append(faces)
             if max_results and results_nr > max_results:
                 break
 
