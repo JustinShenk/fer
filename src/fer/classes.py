@@ -118,7 +118,7 @@ class Video(object):
             return data
 
         if not len(data):
-            return None
+            return pd.DataFrame()
         datalist = self._to_dict(data)
         df = pd.DataFrame(datalist)
         if self.first_face_only:
