@@ -109,12 +109,12 @@ class FER(object):
             emotion_model = pkg_resources.resource_filename(
                 "fer", "data/emotion_model.hdf5"
             )
-            self.config = tf.ConfigProto(log_device_placement=False)
+            self.config = tf.compat.v1.ConfigProto(log_device_placement=False)
             self.config.gpu_options.allow_growth = True
 
             self.__graph = tf.Graph()
 
-            self.__session = tf.Session(config=self.config, graph=self.__graph)
+            self.__session = tf.compat.v1.Session(config=self.config, graph=self.__graph)
 
             # with tf.Session(graph=K.get_session().graph, config=self.config) as sess:
             self.__emotion_classifier = load_model(emotion_model, compile=compile)
