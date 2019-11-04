@@ -44,6 +44,9 @@ from tensorflow.keras.models import load_model
 from fer.classes import Peltarion_Emotion_Classifier
 from fer.exceptions import InvalidImage
 
+from typing import Sequence, Tuple, Union
+NumpyRects = Union[np.ndarray, Sequence[Tuple[int, int, int, int]]]
+
 __author__ = "Justin Shenk"
 
 logging.basicConfig(
@@ -221,7 +224,7 @@ class FER(object):
             6: "neutral",
         }
 
-    def detect_emotions(self, img: np.ndarray) -> list:
+    def detect_emotions(self, img: np.ndarray, face_rectangles: NumpyRects = None) -> list:
         """
         Detects bounding boxes from the specified image with ranking of emotions.
         :param img: image to process (BGR or gray)
@@ -232,7 +235,8 @@ class FER(object):
 
         emotion_labels = self._get_labels()
 
-        face_rectangles = self.find_faces(img, bgr=True)
+        if not face_rectangles:
+            face_rectangles = self.find_faces(img, bgr=True)
 
         gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
