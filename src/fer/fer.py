@@ -38,7 +38,8 @@ from collections import OrderedDict
 import cv2
 import numpy as np
 import pkg_resources
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 from tensorflow.keras.models import load_model
 
 from fer.classes import Peltarion_Emotion_Classifier

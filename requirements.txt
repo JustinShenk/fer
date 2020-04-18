@@ -5,4 +5,4 @@ opencv-contrib-python
 pandas
 Pillow
 requests
-mtcnn
+mtcnn>=0.1.0

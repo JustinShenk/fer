@@ -213,6 +213,7 @@ class Video(object):
 
         if save_frames:
             os.makedirs(self.outdir, exist_ok=True)
+            logging.info(f"Making directories at {self.outdir}")
         root, ext = os.path.splitext(os.path.basename(self.filepath))
         outfile = os.path.join(self.outdir, f"{root}_output{ext}")
 

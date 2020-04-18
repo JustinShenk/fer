@@ -21,7 +21,7 @@ if __name__ == "__main__":
     video = Video(videofile)
 
     # Output list of dictionaries
-    raw_data = video.analyze(detector, display=True)
+    raw_data = video.analyze(detector, display=False)
 
     # Convert to pandas for analysis
     df = video.to_pandas(raw_data)
