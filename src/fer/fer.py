@@ -45,6 +45,9 @@ from tensorflow.keras.models import load_model
 from fer.classes import Peltarion_Emotion_Classifier
 from fer.exceptions import InvalidImage
 
+from typing import Sequence, Tuple, Union
+NumpyRects = Union[np.ndarray, Sequence[Tuple[int, int, int, int]]]
+
 __author__ = "Justin Shenk"
 
 logging.basicConfig(
@@ -110,12 +113,12 @@ class FER(object):
             emotion_model = pkg_resources.resource_filename(
                 "fer", "data/emotion_model.hdf5"
             )
-            self.config = tf.ConfigProto(log_device_placement=False)
+            self.config = tf.compat.v1.ConfigProto(log_device_placement=False)
             self.config.gpu_options.allow_growth = True
 
             self.__graph = tf.Graph()
 
-            self.__session = tf.Session(config=self.config, graph=self.__graph)
+            self.__session = tf.compat.v1.Session(config=self.config, graph=self.__graph)
 
             # with tf.Session(graph=K.get_session().graph, config=self.config) as sess:
             self.__emotion_classifier = load_model(emotion_model, compile=compile)
@@ -222,7 +225,7 @@ class FER(object):
             6: "neutral",
         }
 
-    def detect_emotions(self, img: np.ndarray) -> list:
+    def detect_emotions(self, img: np.ndarray, face_rectangles: NumpyRects = None) -> list:
         """
         Detects bounding boxes from the specified image with ranking of emotions.
         :param img: image to process (BGR or gray)
@@ -233,7 +236,8 @@ class FER(object):
 
         emotion_labels = self._get_labels()
 
-        face_rectangles = self.find_faces(img, bgr=True)
+        if not face_rectangles:
+            face_rectangles = self.find_faces(img, bgr=True)
 
         gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
