@@ -100,21 +100,10 @@ Other good examples of usage can be found in the files
 [example.py](example.py) and [video-example.py](video-example.py)
 located in the root of this repository.
 
-PELTARION API
-=============
-
-Add the API URL as an `emotion_model` argument to `FER()`:
-
-```
-detector = FER(emotion_model=MY_API_URL)
-```
-
-FER will then pick up the URL and token from the environment as `EMOTION_API_URL` and `EMOTION_API_TOKEN`.
-
 MODEL
 =====
 
-FER bundles a Keras model, as well as support for [Peltarion](https://peltarion.com) API.
+FER bundles a Keras model.
 
 The model is a convolutional neural network with weights saved to HDF5
 file in the `data` folder relative to the module's path. It can be
