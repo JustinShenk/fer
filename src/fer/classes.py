@@ -8,7 +8,8 @@ import re
 import requests
 import time
 from typing import Union, Optional
-
+from zipfile import ZipFile
+from pathlib import Path
 import cv2
 import numpy as np
 import pandas as pd
@@ -175,6 +176,7 @@ class Video(object):
         save_frames: bool = True,
         save_video: bool = True,
         annotate_frames: bool = True,
+        zip_images: bool = True
     ):
         """Recognize facial expressions in video using `detector`."""
         data = []
@@ -296,6 +298,21 @@ class Video(object):
                 else:
                     if cv2.waitKey(1) & 0xFF == ord("q"):
                         break
+
+            if zip_images:
+                print("Starting to Zip")
+                outdir = Path(self.outdir)
+                zip_dir = outdir / 'images.zip'
+                images = sorted(list(outdir.glob("*.jpg")))
+                total = len(images)
+                i = 0
+                with ZipFile(zip_dir, 'w') as zip:
+                    for file in images:
+                        zip.write(file, arcname=file.name)
+                        os.remove(file)
+                        i += 1
+                        if i%50 == 0: print(f"Compressing: {i*100 // total}%")
+                print("Zip has finished")
 
             frameCount += 1
             if faces:
