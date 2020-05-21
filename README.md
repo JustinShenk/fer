@@ -7,6 +7,8 @@ Facial expression recognition.
 
 [![PyPI version](https://badge.fury.io/py/fer.svg)](https://badge.fury.io/py/fer) [![Build Status](https://travis-ci.org/justinshenk/fer.svg?branch=master)](https://travis-ci.org/justinshenk/fer) [![Downloads](https://pepy.tech/badge/fer)](https://pepy.tech/project/fer)
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](http://colab.research.google.com/github/justinshenk/fer/blob/master/fer-video-demo.ipynb)
+
 INSTALLATION
 ============
 
