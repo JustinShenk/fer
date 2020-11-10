@@ -124,7 +124,7 @@ CREDIT
 
 This code includes methods and package structure copied or derived from
 Iván de Paz Centeno's [implementation](https://github.com/ipazc/mtcnn/)
-of MTCNN and Octavia Arriaga's [facial expression recognition
+of MTCNN and Octavio Arriaga's [facial expression recognition
 repo](https://github.com/oarriaga/face_classification/).
 
 REFERENCE
