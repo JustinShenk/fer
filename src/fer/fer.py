@@ -33,7 +33,6 @@ import logging
 #
 import os
 import sys
-from collections import OrderedDict
 
 import cv2
 import numpy as np
@@ -42,7 +41,6 @@ import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
 from tensorflow.keras.models import load_model
 
-from fer.classes import Peltarion_Emotion_Classifier
 from fer.exceptions import InvalidImage
 
 from typing import Sequence, Tuple, Union
@@ -79,7 +77,7 @@ class FER(object):
         Initializes the face detector and Keras model for facial expression recognition.
         :param cascade_file: file URI with the Haar cascade for face classification
         :param mtcnn: use MTCNN network for face detection (not yet implemented)
-        :param emotion_model: file URI with the Keras hdf5 model or Peltarion API URL
+        :param emotion_model: file URI with the Keras hdf5 model
         :param scale_factor: parameter specifying how much the image size is reduced at each image scale
         :param min_face_size: minimum size of the face to detect
         :param offsets: padding around face before classification
@@ -107,35 +105,22 @@ class FER(object):
         else:
             self.__face_detector = cv2.CascadeClassifier(cascade_file)
 
-        if not emotion_model:
-            # Local Keras model
-            self.deployment = False
-            emotion_model = pkg_resources.resource_filename(
-                "fer", "data/emotion_model.hdf5"
-            )
-            self.config = tf.compat.v1.ConfigProto(log_device_placement=False)
-            self.config.gpu_options.allow_growth = True
+        # Local Keras model
+        emotion_model = pkg_resources.resource_filename(
+            "fer", "data/emotion_model.hdf5"
+        )
+        self.config = tf.compat.v1.ConfigProto(log_device_placement=False)
+        self.config.gpu_options.allow_growth = True
 
-            self.__graph = tf.Graph()
+        self.__graph = tf.Graph()
 
-            self.__session = tf.compat.v1.Session(config=self.config, graph=self.__graph)
+        self.__session = tf.compat.v1.Session(config=self.config, graph=self.__graph)
 
-            # with tf.Session(graph=K.get_session().graph, config=self.config) as sess:
-            self.__emotion_classifier = load_model(emotion_model, compile=compile)
-            self.__emotion_classifier._make_predict_function()
-            self.__emotion_target_size = self.__emotion_classifier.input_shape[1:3]
+        # with tf.Session(graph=K.get_session().graph, config=self.config) as sess:
+        self.__emotion_classifier = load_model(emotion_model, compile=compile)
+        self.__emotion_classifier._make_predict_function()
+        self.__emotion_target_size = self.__emotion_classifier.input_shape[1:3]
 
-        elif "http" in emotion_model:
-            self.deployment = True
-            url = os.environ.get("EMOTION_API_URL")
-            token = os.environ.get("EMOTION_API_TOKEN")
-            assert (
-                url is not None and token is not None
-            ), "EMOTION_API_URL and EMOTION_API_URL must set in the environment"
-            self.__emotion_classifier = Peltarion_Emotion_Classifier(url, token)
-            self.__emotion_target_size = (48, 48)  # Default FER image size
-        else:
-            raise Exception(f"{emotion_model} is not a valid type")
         logging.debug("Emotion model: {}".format(emotion_model))
 
     @staticmethod
@@ -262,29 +247,20 @@ class FER(object):
             except Exception as e:
                 print("{} resize failed: {}".format(gray_face.shape, e))
                 continue
-            if not self.deployment:
-                # Local Keras model
-                gray_face = self.__preprocess_input(gray_face, True)
-                gray_face = np.expand_dims(gray_face, 0)
-                gray_face = np.expand_dims(gray_face, -1)
+            
+            # Local Keras model
+            gray_face = self.__preprocess_input(gray_face, True)
+            gray_face = np.expand_dims(gray_face, 0)
+            gray_face = np.expand_dims(gray_face, -1)
 
-                emotion_prediction = self.__emotion_classifier.predict(gray_face)[0]
-                labelled_emotions = {
-                    emotion_labels[idx]: round(score, 2)
-                    for idx, score in enumerate(emotion_prediction)
-                }
-            elif self.deployment:
-                # Peltarion API
-                emotion_prediction = self.__emotion_classifier.predict(gray_face)
-                labelled_emotions = {
-                    emotion: round(score, 2)
-                    for emotion, score in emotion_prediction.items()
-                }
-            else:
-                raise NotImplemented()
+            emotion_prediction = self.__emotion_classifier.predict(gray_face)[0]
+            labelled_emotions = {
+                emotion_labels[idx]: round(float(score), 2)
+                for idx, score in enumerate(emotion_prediction)
+            }
 
             emotions.append(
-                OrderedDict(box=face_coordinates, emotions=labelled_emotions)
+                dict(box=face_coordinates, emotions=labelled_emotions)
             )
 
         self.emotions = emotions

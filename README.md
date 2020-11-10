@@ -56,8 +56,10 @@ detector.detect_emotions(img)
 
 Sample output:
 ```
-OrderedDict([{'box': [277, 90, 48, 63], 'emotions': {'angry': 0.02, 'disgust': 0.0, 'fear': 0.05, 'happy': 0.16, 'neutral': 0.09, 'sad': 0.27, 'surprise': 0.41}])
+[{'box': [277, 90, 48, 63], 'emotions': {'angry': 0.02, 'disgust': 0.0, 'fear': 0.05, 'happy': 0.16, 'neutral': 0.09, 'sad': 0.27, 'surprise': 0.41}]
 ```
+
+Pretty print it with `import pprint; pprint.pprint(result)`.
 
 Just want the top emotion? Try:
 
