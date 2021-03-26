@@ -75,24 +75,9 @@ EXTRAS_REQUIRE["dev"] = (
 
 VERSION = find_meta("version")
 
-# README.rst
-if os.path.exists(os.path.join(HERE, "README.rst")):
-    LONG = (
-        read("README.rst")
-        + "\n\n"
-        + "Release Information\n"
-        + "===================\n\n"
-        + re.search(
-            r"(\d+.\d.\d \(.*?\)\n.*?)\n\n\n----\n\n\n", read("CHANGELOG.rst"), re.S
-        ).group(1)
-        + "\n\n`Full changelog "
-        + "<{url}en/stable/changelog.html>`_.\n\n".format(url=URL)
-        + read("AUTHORS.rst")
-    )
-else:
-    # README.md
-    with open(os.path.join(HERE, "README.md"), encoding="utf-8") as f:
-        LONG = f.read()
+# README.md
+LONG = open('README.md').read()
+
 
 
 setup(
@@ -108,7 +93,6 @@ setup(
     url=URL,
     packages=PACKAGES,
     long_description=LONG,
-    long_description_content_type="text/markdown",
     classifiers=CLASSIFIERS,
     install_requires=INSTALL_REQUIRES,
     extras_require=EXTRAS_REQUIRE,
