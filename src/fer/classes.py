@@ -334,22 +334,7 @@ class Video(object):
                         break
                 else:
                     if cv2.waitKey(1) & 0xFF == ord("q"):
-                        break
-
-            if zip_images:
-                print("Starting to Zip")
-                outdir = Path(self.outdir)
-                zip_dir = outdir / 'images.zip'
-                images = sorted(list(outdir.glob("*.jpg")))
-                total = len(images)
-                i = 0
-                with ZipFile(zip_dir, 'w') as zip:
-                    for file in images:
-                        zip.write(file, arcname=file.name)
-                        os.remove(file)
-                        i += 1
-                        if i%50 == 0: print(f"Compressing: {i*100 // total}%")
-                print("Zip has finished")
+                        break            
 
             frameCount += 1
             if faces:
@@ -366,6 +351,21 @@ class Video(object):
                 )
                 if self.tempfile:
                     os.replace(self.tempfile, outfile)
+
+        if save_frames and zip_images:
+            print("Starting to Zip")
+            outdir = Path(self.outdir)
+            zip_dir = outdir / 'images.zip'
+            images = sorted(list(outdir.glob("*.jpg")))
+            total = len(images)
+            i = 0
+            with ZipFile(zip_dir, 'w') as zip:
+                for file in images:
+                    zip.write(file, arcname=file.name)
+                    os.remove(file)
+                    i += 1
+                    if i%50 == 0: print(f"Compressing: {i*100 // total}%")
+            print("Zip has finished")
 
         if output == "csv":
             return self.to_csv(data)
