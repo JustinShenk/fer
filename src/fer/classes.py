@@ -171,15 +171,36 @@ class Video(object):
         output: str = "csv",
         frequency: Optional[int] = None,
         max_results: int = None,
-        save_fps: Optional[bool]=None,
-        video_id: Optional[str]=None,
+        save_fps: Optional[int] = None,
+        video_id: Optional[str] = None,
         save_frames: bool = True,
         save_video: bool = True,
         annotate_frames: bool = True,
         zip_images: bool = True,
-        detection_box: dict = None
-    ):
-        """Recognize facial expressions in video using `detector`."""
+        detection_box: Optional[dict] = None
+    ) -> list:
+        """Recognize facial expressions in video using `detector`.
+        
+        Args:
+        
+            detector (fer.FER): facial expression recognizer
+            display (bool): show images with cv2.imshow
+            output (str): csv or pandas
+            frequency (int): inference on every nth frame (higher number is faster)
+            max_results (int): number of frames to run inference before stopping
+            save_fps (bool): inference frequency = video fps // save_fps
+            video_id (str): filename for saving
+            save_frames (bool): saves frames to directory
+            save_videos (bool): saves output video
+            annotate_frames (bool): add emotion labels
+            zip_images (bool): compress output
+            detection_box (dict): dict with bounding box for subimage (xmin, xmax, ymin, ymax)        
+
+        Returns:
+        
+            data (list): list of results
+            
+        """
         data = []
         if frequency is None:
             frequency = 1
