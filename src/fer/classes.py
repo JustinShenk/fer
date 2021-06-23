@@ -171,14 +171,36 @@ class Video(object):
         output: str = "csv",
         frequency: Optional[int] = None,
         max_results: int = None,
-        save_fps: Optional[bool]=None,
-        video_id: Optional[str]=None,
+        save_fps: Optional[int] = None,
+        video_id: Optional[str] = None,
         save_frames: bool = True,
         save_video: bool = True,
         annotate_frames: bool = True,
-        zip_images: bool = True
-    ):
-        """Recognize facial expressions in video using `detector`."""
+        zip_images: bool = True,
+        detection_box: Optional[dict] = None
+    ) -> list:
+        """Recognize facial expressions in video using `detector`.
+        
+        Args:
+        
+            detector (fer.FER): facial expression recognizer
+            display (bool): show images with cv2.imshow
+            output (str): csv or pandas
+            frequency (int): inference on every nth frame (higher number is faster)
+            max_results (int): number of frames to run inference before stopping
+            save_fps (bool): inference frequency = video fps // save_fps
+            video_id (str): filename for saving
+            save_frames (bool): saves frames to directory
+            save_videos (bool): saves output video
+            annotate_frames (bool): add emotion labels
+            zip_images (bool): compress output
+            detection_box (dict): dict with bounding box for subimage (xmin, xmax, ymin, ymax)        
+
+        Returns:
+        
+            data (list): list of results
+            
+        """
         data = []
         if frequency is None:
             frequency = 1
@@ -231,10 +253,25 @@ class Video(object):
                 frameCount += 1
                 continue
 
+            if detection_box is not None:
+                try:
+                    frame = self._crop(frame, detection_box)
+                except Exception as e:
+                    logging.error(e)
+                    break
+
             padded_frame = detector.pad(frame)
             try:
                 # Get faces with emotions
                 faces = detector.detect_emotions(padded_frame)
+                if detection_box is not None:
+                    try:
+                        for face in faces:
+                            original_box = face.get("box")
+                            face["box"] = (original_box[0] + detection_box.get("x_min"), original_box[1] + detection_box.get("y_min"), original_box[2], original_box[3])
+                    except Exception as e:
+                        logging.error(e)
+
             except Exception as e:
                 logging.error(e)
                 break
@@ -349,6 +386,13 @@ class Video(object):
             self.tempfile or outfile, fourcc, fps, (width, height), True
         )
         return videowriter
+
+    @staticmethod
+    def _crop(self, frame, detection_box):
+        crop_frame = frame[
+                     detection_box.get("y_min"): detection_box.get("y_max"),
+                     detection_box.get("x_min"): detection_box.get("x_max")]
+        return crop_frame
 
     def __del__(self):
         try:
