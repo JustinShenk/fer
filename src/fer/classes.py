@@ -135,7 +135,7 @@ class Video(object):
             # Already only one face in df
             return df
 
-        columns = [x for x in df.columns if x[-1] is "0"]
+        columns = [x for x in df.columns if x[-1] == "0"]
         new_columns = [x[:-1] for x in columns]
         single_df = df[columns]
         single_df.columns = new_columns
