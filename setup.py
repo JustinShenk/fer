@@ -66,7 +66,7 @@ INSTALL_REQUIRES = [
     "keras==2.4.3",
     "pandas",
     "requests",
-    "mtcnn>=0.1.0",
+    "mtcnn>=0.1.1",
 ]
 EXTRAS_REQUIRE = {"docs": ["sphinx"], "tests": ["coverage", "pytest"]}
 EXTRAS_REQUIRE["dev"] = (
