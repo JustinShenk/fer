@@ -267,10 +267,10 @@ class FER(object):
 
         return emotions
 
-    def top_emotion(self, img: np.ndarray):
+    def top_emotion(self, img: np.ndarray)-> Tuple[Union[str,None], Union[float,None]]:
         """Convenience wrapper for `detect_emotions` returning only top emotion for first face in frame.
         :param img: image to process
-        :return: top emotion and score (for first face in frame)
+        :return: top emotion and score (for first face in frame) or (None, None)
 
         """
         emotions = self.detect_emotions(img=img)
@@ -279,7 +279,10 @@ class FER(object):
         ]
 
         # Take first face
-        top_emotion = top_emotions[0]
+        if len(top_emotions):
+            top_emotion = top_emotions[0]
+        else:
+            return (None, None)
         score = emotions[0]["emotions"][top_emotion]
 
         return top_emotion, score
