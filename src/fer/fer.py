@@ -221,7 +221,7 @@ class FER(object):
 
         emotion_labels = self._get_labels()
 
-        if not face_rectangles:
+        if (face_rectangles is None):
             face_rectangles = self.find_faces(img, bgr=True)
 
         gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)

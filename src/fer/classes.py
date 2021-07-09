@@ -221,6 +221,7 @@ class Video(object):
             int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),
             int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
         )
+
         fps = self.cap.get(cv2.CAP_PROP_FPS)
         length = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
         assert fps and length, "File {} not loaded".format(self.filepath)

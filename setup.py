@@ -63,7 +63,7 @@ INSTALL_REQUIRES = [
     "matplotlib",
     "tensorflow~=2.0",
     "opencv-contrib-python",
-    "keras",
+    "keras==2.4.3",
     "pandas",
     "requests",
     "mtcnn>=0.1.0",

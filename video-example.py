@@ -18,6 +18,7 @@ if __name__ == "__main__":
     except:
         videofile = "test.mp4"
     detector = FER(mtcnn=True)
+    
     video = Video(videofile)
 
     # Output list of dictionaries
