@@ -79,7 +79,7 @@ try:
         INSTALL_REQUIRES.append("tensorflow>=2.4.0")
 except ImportError:
     INSTALL_REQUIRES.append("tensorflow>=2.4.0")
-
+    
 EXTRAS_REQUIRE = {"docs": ["sphinx"], "tests": ["coverage", "pytest"]}
 EXTRAS_REQUIRE["dev"] = (
     EXTRAS_REQUIRE["tests"] + EXTRAS_REQUIRE["docs"] + ["wheel", "pre-commit"]
