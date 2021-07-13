@@ -1,5 +1,5 @@
 matplotlib
-tensorflow~=2.0
+tensorflow>=2.4
 opencv-python
 opencv-contrib-python
 pandas
