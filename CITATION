@@ -1,0 +1,13 @@
+@software{justin_shenk_2021_5362356,
+  author       = {Justin Shenk and
+                  Aaron CG and
+                  Octavio Arriaga and
+                  Owlwasrowk},
+  title        = {justinshenk/fer: Zenodo},
+  month        = sep,
+  year         = 2021,
+  publisher    = {Zenodo},
+  version      = {zenodo},
+  doi          = {10.5281/zenodo.5362356},
+  url          = {https://doi.org/10.5281/zenodo.5362356}
+}
