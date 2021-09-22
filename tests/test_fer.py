@@ -1,10 +1,10 @@
 import unittest
+
 import cv2
 import pandas as pd
 
-from fer import Video
+from fer import FER, Video
 from fer.exceptions import InvalidImage
-from fer import FER
 
 detector = None
 

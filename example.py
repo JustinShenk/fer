@@ -5,7 +5,7 @@ import cv2
 
 from fer import FER
 
-detector = FER(mtcnn=True) # or with mtcnn=False for Haar Cascade Classifier
+detector = FER(mtcnn=True)  # or with mtcnn=False for Haar Cascade Classifier
 
 image = cv2.imread("justin.jpg")
 result = detector.detect_emotions(image)
@@ -25,8 +25,7 @@ cv2.rectangle(
 for idx, (emotion, score) in enumerate(emotions.items()):
     color = (211, 211, 211) if score < 0.01 else (0, 255, 0)
     emotion_score = "{}: {}".format(
-        emotion, "{:.2f}".format(score) if score > 0.01 else ""
-    )
+        emotion, "{:.2f}".format(score) if score > 0.01 else "")
     cv2.putText(
         image,
         emotion_score,

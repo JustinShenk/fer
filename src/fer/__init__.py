@@ -23,8 +23,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from fer.fer import FER
 from fer.classes import Video
+from fer.fer import FER
 
 __version__ = "21.0.3"
 

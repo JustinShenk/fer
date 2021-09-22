@@ -4,13 +4,13 @@ import os
 import sys
 
 import matplotlib
+
 if os.name == 'posix' and "DISPLAY" not in os.environ:
     matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 
-from fer import FER
-from fer import Video
+from fer import FER, Video
 
 if __name__ == "__main__":
     try:
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     except:
         videofile = "test.mp4"
     detector = FER(mtcnn=True)
-    
+
     video = Video(videofile)
 
     # Output list of dictionaries

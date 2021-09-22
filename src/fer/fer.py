@@ -24,7 +24,6 @@
 # SOFTWARE.
 
 import logging
-
 # IMPORTANT:
 #
 # This code is derived from Iván de Paz Centeno's implementation of MTCNN
@@ -37,13 +36,13 @@ import sys
 import cv2
 import numpy as np
 import pkg_resources
-import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
+
+from typing import Sequence, Tuple, Union
+
 from tensorflow.keras.models import load_model
 
 from fer.exceptions import InvalidImage
 
-from typing import Sequence, Tuple, Union
 NumpyRects = Union[np.ndarray, Sequence[Tuple[int, int, int, int]]]
 
 __author__ = "Justin Shenk"
@@ -109,14 +108,6 @@ class FER(object):
         emotion_model = pkg_resources.resource_filename(
             "fer", "data/emotion_model.hdf5"
         )
-        self.config = tf.compat.v1.ConfigProto(log_device_placement=False)
-        self.config.gpu_options.allow_growth = True
-
-        self.__graph = tf.Graph()
-
-        self.__session = tf.compat.v1.Session(config=self.config, graph=self.__graph)
-
-        # with tf.Session(graph=K.get_session().graph, config=self.config) as sess:
         self.__emotion_classifier = load_model(emotion_model, compile=compile)
         self.__emotion_classifier._make_predict_function()
         self.__emotion_target_size = self.__emotion_classifier.input_shape[1:3]

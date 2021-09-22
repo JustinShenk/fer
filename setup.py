@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import codecs
-
-from setuptools import setup, find_packages
-
 import os
 import re
+
+from setuptools import find_packages, setup
 
 ###############################################################################
 
@@ -33,8 +32,8 @@ def find_meta(meta):
     Extract __*meta*__ from META_FILE.
     """
     meta_match = re.search(
-        r"^__{meta}__ = ['\"]([^'\"]*)['\"]".format(meta=meta), META_FILE, re.M
-    )
+        r"^__{meta}__ = ['\"]([^'\"]*)['\"]".format(meta=meta), META_FILE,
+        re.M)
     if meta_match:
         return meta_match.group(1)
     raise RuntimeError("Unable to find __{meta}__ string.".format(meta=meta))
@@ -61,29 +60,13 @@ CLASSIFIERS = [
 PYTHON_REQUIRES = ">= 3.6"
 
 INSTALL_REQUIRES = [
-    "matplotlib",
-    "opencv-contrib-python",
-    "keras==2.4.3",
-    "pandas",
-    "requests",
-    "mtcnn>=0.1.1"
+    "matplotlib", "opencv-contrib-python", "keras>=2.0.0", "pandas",
+    "requests", "mtcnn>=0.1.1"
 ]
-# workaround for https://github.com/tensorflow/tensorflow/issues/44467
-try:
-    import tensorflow
-    TF_VERSION = tensorflow.__version__
-    MAJOR, MINOR, _ = TF_VERSION.split('.', maxsplit=2)
-    if MAJOR == "2" and int(MINOR) < 4:
-        INSTALL_REQUIRES.append("h5py==2.10.0")
-    else:
-        INSTALL_REQUIRES.append("tensorflow>=2.4.0")
-except ImportError:
-    INSTALL_REQUIRES.append("tensorflow>=2.4.0")
-    
+
 EXTRAS_REQUIRE = {"docs": ["sphinx"], "tests": ["coverage", "pytest"]}
-EXTRAS_REQUIRE["dev"] = (
-    EXTRAS_REQUIRE["tests"] + EXTRAS_REQUIRE["docs"] + ["wheel", "pre-commit"]
-)
+EXTRAS_REQUIRE["dev"] = (EXTRAS_REQUIRE["tests"] + EXTRAS_REQUIRE["docs"] +
+                         ["wheel", "pre-commit"])
 
 VERSION = find_meta("version")
 

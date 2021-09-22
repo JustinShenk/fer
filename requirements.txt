@@ -1,5 +1,5 @@
 matplotlib
-tensorflow>=2.4
+keras>=2.0.0
 opencv-python
 opencv-contrib-python
 pandas

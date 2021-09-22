@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import logging
-
 import csv
+import logging
 import os
 import re
-import requests
 import time
-from typing import Union, Optional
-from zipfile import ZipFile
 from pathlib import Path
+from typing import Optional, Union
+from zipfile import ZipFile
+
 import cv2
 import numpy as np
 import pandas as pd
+import requests
 
 logging.getLogger(__name__)
 
