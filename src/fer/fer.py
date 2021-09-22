@@ -109,7 +109,7 @@ class FER(object):
             "fer", "data/emotion_model.hdf5"
         )
         self.__emotion_classifier = load_model(emotion_model, compile=compile)
-        self.__emotion_classifier._make_predict_function()
+        self.__emotion_classifier.make_predict_function()
         self.__emotion_target_size = self.__emotion_classifier.input_shape[1:3]
 
         logging.debug("Emotion model: {}".format(emotion_model))
