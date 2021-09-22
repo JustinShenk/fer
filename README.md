@@ -9,6 +9,9 @@ Facial expression recognition.
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](http://colab.research.google.com/github/justinshenk/fer/blob/master/fer-video-demo.ipynb)
 
+[![DOI](https://zenodo.org/badge/150107943.svg)](https://zenodo.org/badge/latestdoi/150107943)
+
+
 INSTALLATION
 ============
 
@@ -69,13 +72,13 @@ emotion, score = detector.top_emotion(img) # 'happy', 0.99
 
 #### MTCNN Facial Recognition
 
-Faces by default are detected using OpenCV's Haar Cascade classifier. To use the more accurate MTCNN network, 
+Faces by default are detected using OpenCV's Haar Cascade classifier. To use the more accurate MTCNN network,
 add the parameter:
 
 ```python
 detector = FER(mtcnn=True)
 ```
- 
+
 #### Video
 For recognizing facial expressions in video, the `Video` class splits video into frames. It can use a local Keras model (default) or Peltarion API for the backend:
 
