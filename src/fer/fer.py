@@ -143,7 +143,7 @@ class FER(object):
             y -= diff // 2
             h += diff
         if w != h:
-            log.debug(f"{w} is not {h}")
+            logging.debug(f"{w} is not {h}")
 
         return (x, y, w, h)
 

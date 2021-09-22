@@ -6,3 +6,4 @@ pandas
 Pillow
 requests
 mtcnn>=0.1.1
+tqdm

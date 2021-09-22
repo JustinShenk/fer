@@ -61,7 +61,7 @@ PYTHON_REQUIRES = ">= 3.6"
 
 INSTALL_REQUIRES = [
     "matplotlib", "opencv-contrib-python", "keras>=2.0.0", "pandas",
-    "requests", "mtcnn>=0.1.1"
+    "requests", "mtcnn>=0.1.1", "tqdm"
 ]
 
 EXTRAS_REQUIRE = {"docs": ["sphinx"], "tests": ["coverage", "pytest"]}
