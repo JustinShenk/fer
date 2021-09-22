@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import csv
-import logging
 import os
 import re
 import time
@@ -12,43 +11,10 @@ from zipfile import ZipFile
 import cv2
 import numpy as np
 import pandas as pd
-import requests
 
-logging.getLogger(__name__)
+from tqdm import tqdm
 
-
-class Peltarion_Emotion_Classifier(object):
-    def __init__(self, url, token, shape=(48, 48)):
-        self.url = url
-        self.token = token
-        self.shape = shape
-
-    @staticmethod
-    def _unnormalize_face(
-        gray_face: np.ndarray, shape: tuple = (48, 48), v2: bool = True
-    ) -> object:
-        gray_face = gray_face.reshape(shape)
-        if v2:
-            gray_face = gray_face / 2.0
-            gray_face = gray_face + 0.5
-        gray_face = gray_face * 255.0
-        return gray_face
-
-    def predict(self, gray_face) -> list:
-        """Gray face to emotions with Peltarion REST API"""
-        instance_path = os.environ.get("FLASK_INSTANCE_PATH", os.getcwd())
-        temp_filepath = os.path.join(instance_path, "tmp_01.npy")
-        gray_face = gray_face.reshape(48, 48, 1).astype(np.float32)
-        np.save(temp_filepath, gray_face)
-        headers = {"Authorization": "Bearer " + self.token}
-        files = {"image": open(temp_filepath, "rb")}
-        response = requests.post(self.url, headers=headers, files=files).json()
-        try:
-            emotion = response["emotion"]
-        except:
-            logging.error(f"{response} is not a valid response")
-        return emotion
-
+from .logger import log
 
 class Video(object):
     def __init__(
@@ -70,7 +36,7 @@ class Video(object):
         self.outdir = outdir
 
         if not first_face_only:
-            logging.error("Only single-face charting is implemented")
+            log.error("Only single-face charting is implemented")
         self.first_face_only = first_face_only
         self.tempfile = tempfile
         self.filepath = video_file
@@ -228,9 +194,9 @@ class Video(object):
 
         if save_fps is not None:
             frequency = fps // save_fps
-            logging.info("Saving every {} frames".format(frequency))
+            log.info("Saving every {} frames".format(frequency))
 
-        logging.info(
+        log.info(
             "{:.2f} fps, {} frames, {:.2f} seconds".format(fps, length, length / fps)
         )
 
@@ -238,13 +204,14 @@ class Video(object):
 
         if save_frames:
             os.makedirs(self.outdir, exist_ok=True)
-            logging.info(f"Making directories at {self.outdir}")
+            log.info(f"Making directories at {self.outdir}")
         root, ext = os.path.splitext(os.path.basename(self.filepath))
         outfile = os.path.join(self.outdir, f"{root}_output{ext}")
 
         if save_video:
             videowriter = self._save_video(outfile, fps, width, height)
 
+        pbar = tqdm(total=length, unit='frames')
         while self.cap.isOpened():
             start_time = time.time()
             ret, frame = self.cap.read()
@@ -258,7 +225,7 @@ class Video(object):
                 try:
                     frame = self._crop(frame, detection_box)
                 except Exception as e:
-                    logging.error(e)
+                    log.error(e)
                     break
 
             padded_frame = detector.pad(frame)
@@ -271,10 +238,10 @@ class Video(object):
                             original_box = face.get("box")
                             face["box"] = (original_box[0] + detection_box.get("x_min"), original_box[1] + detection_box.get("y_min"), original_box[2], original_box[3])
                     except Exception as e:
-                        logging.error(e)
+                        log.error(e)
 
             except Exception as e:
-                logging.error(e)
+                log.error(e)
                 break
 
             # Save images to `self.outdir`
@@ -343,18 +310,21 @@ class Video(object):
             if max_results and results_nr > max_results:
                 break
 
+            pbar.update(1)
+
+        pbar.close()
         self.cap.release()
         if display or save_video:
             videowriter.release()
             if save_video:
-                logging.info(
+                log.info(
                     "Completed analysis: saved to {}".format(self.tempfile or outfile)
                 )
                 if self.tempfile:
                     os.replace(self.tempfile, outfile)
 
         if save_frames and zip_images:
-            print("Starting to Zip")
+            log.info("Starting to Zip")
             outdir = Path(self.outdir)
             zip_dir = outdir / 'images.zip'
             images = sorted(list(outdir.glob("*.jpg")))
@@ -365,8 +335,8 @@ class Video(object):
                     zip.write(file, arcname=file.name)
                     os.remove(file)
                     i += 1
-                    if i%50 == 0: print(f"Compressing: {i*100 // total}%")
-            print("Zip has finished")
+                    if i%50 == 0: log.info(f"Compressing: {i*100 // total}%")
+            log.info("Zip has finished")
 
         if output == "csv":
             return self.to_csv(data)
@@ -379,7 +349,7 @@ class Video(object):
     def _save_video(self, outfile:str, fps: int, width: int, height: int):
         if os.path.isfile(outfile):
             os.remove(outfile)
-            logging.info("Deleted pre-existing {}".format(outfile))
+            log.info("Deleted pre-existing {}".format(outfile))
         if self.tempfile and os.path.isfile(self.tempfile):
             os.remove(self.tempfile)
         fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")

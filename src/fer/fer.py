@@ -23,14 +23,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import logging
 # IMPORTANT:
 #
 # This code is derived from Iván de Paz Centeno's implementation of MTCNN
 # (https://github.com/ipazc/mtcnn/) and Octavia Arriaga's facial expression recognition repo
 # (https://github.com/oarriaga/face_classification).
 #
-import os
 import sys
 
 import cv2
@@ -41,17 +39,12 @@ from typing import Sequence, Tuple, Union
 
 from tensorflow.keras.models import load_model
 
-from fer.exceptions import InvalidImage
+from .exceptions import InvalidImage
+from .logger import log
 
 NumpyRects = Union[np.ndarray, Sequence[Tuple[int, int, int, int]]]
 
 __author__ = "Justin Shenk"
-
-logging.basicConfig(
-    format="%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s",
-    datefmt="%d-%m-%Y:%H:%M:%S",
-    level=logging.INFO,
-)
 
 
 class FER(object):
@@ -112,7 +105,7 @@ class FER(object):
         self.__emotion_classifier.make_predict_function()
         self.__emotion_target_size = self.__emotion_classifier.input_shape[1:3]
 
-        logging.debug("Emotion model: {}".format(emotion_model))
+        log.debug("Emotion model: {}".format(emotion_model))
 
     @staticmethod
     def pad(image):
@@ -150,7 +143,7 @@ class FER(object):
             y -= diff // 2
             h += diff
         if w != h:
-            logging.debug(f"{w} is not {h}")
+            log.debug(f"{w} is not {h}")
 
         return (x, y, w, h)
 
@@ -236,7 +229,7 @@ class FER(object):
             try:
                 gray_face = cv2.resize(gray_face, self.__emotion_target_size)
             except Exception as e:
-                print("{} resize failed: {}".format(gray_face.shape, e))
+                log.info("{} resize failed: {}".format(gray_face.shape, e))
                 continue
             
             # Local Keras model
