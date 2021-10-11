@@ -46,7 +46,7 @@ NumpyRects = Union[np.ndarray, Sequence[Tuple[int, int, int, int]]]
 
 __author__ = "Justin Shenk"
 
-
+PADDING = 40
 class FER(object):
     """
     Allows performing Facial Expression Recognition ->
@@ -113,13 +113,12 @@ class FER(object):
         bottom = image[row - 2 : row, 0:col]
         mean = cv2.mean(bottom)[0]
 
-        bordersize = 40
         padded_image = cv2.copyMakeBorder(
             image,
-            top=bordersize,
-            bottom=bordersize,
-            left=bordersize,
-            right=bordersize,
+            top = PADDING,
+            bottom = PADDING,
+            left = PADDING,
+            right= PADDING,
             borderType=cv2.BORDER_CONSTANT,
             value=[mean, mean, mean],
         )
@@ -128,7 +127,7 @@ class FER(object):
     @staticmethod
     def depad(image):
         row, col = image.shape[:2]
-        return image[40 : row - 40, 40 : col - 40]
+        return image[PADDING : row - PADDING, PADDING : col - PADDING]
 
     @staticmethod
     def tosquare(bbox):
@@ -209,20 +208,23 @@ class FER(object):
             face_rectangles = self.find_faces(img, bgr=True)
 
         gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        gray_img = self.pad(gray_img)
 
         emotions = []
         for face_coordinates in face_rectangles:
             face_coordinates = self.tosquare(face_coordinates)
             x1, x2, y1, y2 = self.__apply_offsets(face_coordinates)
+            
+            # adjust for padding
+            x1 += PADDING
+            x2 += PADDING
+            y1 += PADDING
+            y2 += PADDING            
+            x1 = np.clip(x1, a_min=0, a_max=None)
+            y1 = np.clip(y1, a_min=0, a_max=None)
 
-            if y1 < 0 or x1 < 0:
-                gray_img = self.pad(gray_img)
-                x1 += 40
-                x2 += 40
-                y1 += 40
-                y2 += 40
-                x1 = np.clip(x1, a_min=0, a_max=None)
-                y1 = np.clip(y1, a_min=0, a_max=None)
+            gray_face = gray_img[max(0, y1 - PADDING):y2 + PADDING,
+                                 max(0, x1 - PADDING):x2 + PADDING]
 
             gray_face = gray_img[y1:y2, x1:x2]
 
@@ -234,8 +236,7 @@ class FER(object):
             
             # Local Keras model
             gray_face = self.__preprocess_input(gray_face, True)
-            gray_face = np.expand_dims(gray_face, 0)
-            gray_face = np.expand_dims(gray_face, -1)
+            gray_face = np.expand_dims(np.expand_dims(gray_face, 0), -1)
 
             emotion_prediction = self.__emotion_classifier.predict(gray_face)[0]
             labelled_emotions = {
