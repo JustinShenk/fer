@@ -359,7 +359,7 @@ class Video(object):
         return videowriter
 
     @staticmethod
-    def _crop(self, frame, detection_box):
+    def _crop(frame, detection_box):
         crop_frame = frame[
                      detection_box.get("y_min"): detection_box.get("y_max"),
                      detection_box.get("x_min"): detection_box.get("x_max")]
