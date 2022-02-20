@@ -109,6 +109,7 @@ class FER(object):
 
     @staticmethod
     def pad(image):
+        """Pad image."""
         row, col = image.shape[:2]
         bottom = image[row - 2 : row, 0:col]
         mean = cv2.mean(bottom)[0]
@@ -177,9 +178,16 @@ class FER(object):
         return x
 
     def __apply_offsets(self, face_coordinates):
+        """Offset face coordinates with padding before classification.
+        x1, x2, y1, y2 = 0, 100, 0, 100 becomes -10, 110, -10, 110
+        """
         x, y, width, height = face_coordinates
         x_off, y_off = self.__offsets
-        return (x - x_off, x + width + x_off, y - y_off, y + height + y_off)
+        x1 = x - x_off
+        x2 = x + width + x_off
+        y1 = y - y_off
+        y2 = y + height + y_off
+        return x1, x2, y1, y2
 
     @staticmethod
     def _get_labels():
@@ -204,48 +212,57 @@ class FER(object):
 
         emotion_labels = self._get_labels()
 
-        if (face_rectangles is None):
+        if face_rectangles is None:
             face_rectangles = self.find_faces(img, bgr=True)
 
         gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         gray_img = self.pad(gray_img)
 
         emotions = []
+        gray_faces = []
+        
         for face_coordinates in face_rectangles:
             face_coordinates = self.tosquare(face_coordinates)
-            x1, x2, y1, y2 = self.__apply_offsets(face_coordinates)
             
-            # adjust for padding
+            # offset to expand bounding box
+            # Note: x1 and y1 can be negative
+            x1, x2, y1, y2 = self.__apply_offsets(face_coordinates)
+                        
+            # account for padding in bounding box coordinates
             x1 += PADDING
+            y1 += PADDING      
             x2 += PADDING
-            y1 += PADDING
-            y2 += PADDING            
+            y2 += PADDING
             x1 = np.clip(x1, a_min=0, a_max=None)
             y1 = np.clip(y1, a_min=0, a_max=None)
 
-            gray_face = gray_img[max(0, y1 - PADDING):y2 + PADDING,
-                                 max(0, x1 - PADDING):x2 + PADDING]
-
-            gray_face = gray_img[y1:y2, x1:x2]
+            gray_face = gray_img[max(0, y1):y2,
+                                 max(0, x1):x2]
 
             try:
                 gray_face = cv2.resize(gray_face, self.__emotion_target_size)
             except Exception as e:
-                log.info("{} resize failed: {}".format(gray_face.shape, e))
+                log.warn("{} resize failed: {}".format(gray_face.shape, e))
                 continue
             
             # Local Keras model
             gray_face = self.__preprocess_input(gray_face, True)
-            gray_face = np.expand_dims(np.expand_dims(gray_face, 0), -1)
+            gray_faces.append(gray_face)
 
-            emotion_prediction = self.__emotion_classifier.predict(gray_face)[0]
+        # predict all faces
+        # gray_faces_arr = 
+        if not len(gray_faces):
+            return emotions
+            
+        emotion_predictions = self.__emotion_classifier(np.array(gray_faces))
+        for face_idx, face in enumerate(emotion_predictions):
             labelled_emotions = {
                 emotion_labels[idx]: round(float(score), 2)
-                for idx, score in enumerate(emotion_prediction)
+                for idx, score in enumerate(face)
             }
 
             emotions.append(
-                dict(box=face_coordinates, emotions=labelled_emotions)
+                dict(box=face_rectangles[face_idx], emotions=labelled_emotions)
             )
 
         self.emotions = emotions

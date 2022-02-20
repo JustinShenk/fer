@@ -7,8 +7,10 @@ class TqdmLoggingHandler(logging.Handler):
     def __init__(self, level=logging.NOTSET):
         super().__init__(level)
         datefmt = "%d-%m-%Y:%H:%M:%S"
-        formatter = logging.Formatter("%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s",
-        datefmt)
+        formatter = logging.Formatter(
+            "%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s",
+            datefmt,
+        )
         self.setFormatter(formatter)
 
     def emit(self, record):

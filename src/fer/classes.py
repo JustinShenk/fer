@@ -9,16 +9,21 @@ from typing import Optional, Union
 from zipfile import ZipFile
 
 import cv2
-import numpy as np
 import pandas as pd
 
 from tqdm import tqdm
 
 from .logger import log
+from .utils import draw_annotations
+
 
 class Video(object):
     def __init__(
-        self, video_file:str, outdir:str="output", first_face_only:bool=True, tempfile:Optional[str]=None
+        self,
+        video_file: str,
+        outdir: str = "output",
+        first_face_only: bool = True,
+        tempfile: Optional[str] = None,
     ):
         """Video class for extracting and saving frames for emotion detection.
         :param video_file - str
@@ -115,6 +120,7 @@ class Video(object):
 
     def to_csv(self, data, filename="data.csv"):
         """Save data to csv"""
+
         def key(item):
             key_pat = re.compile(r"^(\D+)(\d+)$")
             m = key_pat.match(item)
@@ -132,7 +138,7 @@ class Video(object):
 
     def analyze(
         self,
-        detector, # fer.FER instance
+        detector,  # fer.FER instance
         display: bool = False,
         output: str = "csv",
         frequency: Optional[int] = None,
@@ -143,7 +149,7 @@ class Video(object):
         save_video: bool = True,
         annotate_frames: bool = True,
         zip_images: bool = True,
-        detection_box: Optional[dict] = None
+        detection_box: Optional[dict] = None,
     ) -> list:
         """Recognize facial expressions in video using `detector`.
         
@@ -211,12 +217,18 @@ class Video(object):
         if save_video:
             videowriter = self._save_video(outfile, fps, width, height)
 
-        pbar = tqdm(total=length, unit='frames')
+        pbar = tqdm(total=length, unit="frames")
+        
         while self.cap.isOpened():
             start_time = time.time()
             ret, frame = self.cap.read()
             if not ret:  # end of video
                 break
+
+            if frame is None:
+                log.warn("Empty frame")
+                continue
+
             if frameCount % frequency != 0:
                 frameCount += 1
                 continue
@@ -228,15 +240,22 @@ class Video(object):
                     log.error(e)
                     break
 
-            padded_frame = detector.pad(frame)
             try:
-                # Get faces with emotions
-                faces = detector.detect_emotions(padded_frame)
+                # Get faces and detect emotions 
+                # coordinates are for original frame
+                faces = detector.detect_emotions(frame)
+                
+                # Offset detection_box to include padding
                 if detection_box is not None:
                     try:
                         for face in faces:
                             original_box = face.get("box")
-                            face["box"] = (original_box[0] + detection_box.get("x_min"), original_box[1] + detection_box.get("y_min"), original_box[2], original_box[3])
+                            face["box"] = (
+                                original_box[0] + detection_box.get("x_min"),
+                                original_box[1] + detection_box.get("y_min"),
+                                original_box[2],
+                                original_box[3],
+                            )
                     except Exception as e:
                         log.error(e)
 
@@ -248,61 +267,30 @@ class Video(object):
             imgpath = os.path.join(
                 self.outdir, (video_id or root) + str(frameCount) + ".jpg"
             )
-            if save_frames and not annotate_frames:
+            if annotate_frames:
+                assert isinstance(faces, list), type(faces)
+                frame = draw_annotations(frame, faces, boxes=True, scores=True)
+
+            if save_frames:
                 cv2.imwrite(imgpath, frame)
 
-            if display or save_video or annotate_frames:
-                assert isinstance(faces, list), type(faces)
-                for face in faces:
-                    bounding_box = face["box"]
-                    emotions = face["emotions"]
+            if display:
+                cv2.imshow("Video", frame)
+            if save_frames:
+                cv2.imwrite(imgpath, frame)
+            if save_video:
+                videowriter.write(frame)
+            results_nr += 1
 
-                    cv2.rectangle(
-                        frame,
-                        (bounding_box[0] - 40, bounding_box[1] - 40),
-                        (
-                            bounding_box[0] - 40 + bounding_box[2],
-                            bounding_box[1] - 40 + bounding_box[3],
-                        ),
-                        (0, 155, 255),
-                        2,
-                    )
-
-                    for idx, (emotion, score) in enumerate(emotions.items()):
-                        color = (211, 211, 211) if score < 0.01 else (0, 255, 0)
-                        emotion_score = "{}: {}".format(
-                            emotion, "{:.2f}".format(score) if score > 0.01 else ""
-                        )
-                        cv2.putText(
-                            frame,
-                            emotion_score,
-                            (
-                                bounding_box[0] - 40,
-                                bounding_box[1] - 40 + bounding_box[3] + 30 + idx * 15,
-                            ),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            0.5,
-                            color,
-                            1,
-                            cv2.LINE_AA,
-                        )
-                    if display:
-                        cv2.imshow("Video", frame)
-                    if save_frames and annotate_frames:
-                        cv2.imwrite(imgpath, frame)
-                    if save_video:
-                        videowriter.write(frame)
-                    results_nr += 1
-
-                if display or save_video:
-                    remaining_duration = max(
-                        1, int((time.time() - start_time) * 1000 - capture_duration)
-                    )
-                    if cv2.waitKey(remaining_duration) & 0xFF == ord("q"):
-                        break
-                else:
-                    if cv2.waitKey(1) & 0xFF == ord("q"):
-                        break            
+            if display or save_video:
+                remaining_duration = max(
+                    1, int((time.time() - start_time) * 1000 - capture_duration)
+                )
+                if cv2.waitKey(remaining_duration) & 0xFF == ord("q"):
+                    break
+            else:
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
 
             frameCount += 1
             if faces:
@@ -326,16 +314,17 @@ class Video(object):
         if save_frames and zip_images:
             log.info("Starting to Zip")
             outdir = Path(self.outdir)
-            zip_dir = outdir / 'images.zip'
+            zip_dir = outdir / "images.zip"
             images = sorted(list(outdir.glob("*.jpg")))
             total = len(images)
             i = 0
-            with ZipFile(zip_dir, 'w') as zip:
+            with ZipFile(zip_dir, "w") as zip:
                 for file in images:
                     zip.write(file, arcname=file.name)
                     os.remove(file)
                     i += 1
-                    if i%50 == 0: log.info(f"Compressing: {i*100 // total}%")
+                    if i % 50 == 0:
+                        log.info(f"Compressing: {i*100 // total}%")
             log.info("Zip has finished")
 
         if output == "csv":
@@ -344,9 +333,8 @@ class Video(object):
             return self.to_pandas(data)
         else:
             raise NotImplementedError(f"{output} is not supported")
-        return data
 
-    def _save_video(self, outfile:str, fps: int, width: int, height: int):
+    def _save_video(self, outfile: str, fps: int, width: int, height: int):
         if os.path.isfile(outfile):
             os.remove(outfile)
             log.info("Deleted pre-existing {}".format(outfile))
@@ -361,8 +349,9 @@ class Video(object):
     @staticmethod
     def _crop(frame, detection_box):
         crop_frame = frame[
-                     detection_box.get("y_min"): detection_box.get("y_max"),
-                     detection_box.get("x_min"): detection_box.get("x_max")]
+            detection_box.get("y_min") : detection_box.get("y_max"),
+            detection_box.get("x_min") : detection_box.get("x_max"),
+        ]
         return crop_frame
 
     def __del__(self):

@@ -32,8 +32,8 @@ def find_meta(meta):
     Extract __*meta*__ from META_FILE.
     """
     meta_match = re.search(
-        r"^__{meta}__ = ['\"]([^'\"]*)['\"]".format(meta=meta), META_FILE,
-        re.M)
+        r"^__{meta}__ = ['\"]([^'\"]*)['\"]".format(meta=meta), META_FILE, re.M
+    )
     if meta_match:
         return meta_match.group(1)
     raise RuntimeError("Unable to find __{meta}__ string.".format(meta=meta))
@@ -60,18 +60,24 @@ CLASSIFIERS = [
 PYTHON_REQUIRES = ">= 3.6"
 
 INSTALL_REQUIRES = [
-    "matplotlib", "opencv-contrib-python", "keras>=2.0.0", "pandas",
-    "requests", "mtcnn>=0.1.1", "tqdm"
+    "matplotlib",
+    "opencv-contrib-python",
+    "keras>=2.0.0",
+    "pandas",
+    "requests",
+    "mtcnn>=0.1.1",
+    "tqdm",
 ]
 
 EXTRAS_REQUIRE = {"docs": ["sphinx"], "tests": ["coverage", "pytest"]}
-EXTRAS_REQUIRE["dev"] = (EXTRAS_REQUIRE["tests"] + EXTRAS_REQUIRE["docs"] +
-                         ["wheel", "pre-commit"])
+EXTRAS_REQUIRE["dev"] = (
+    EXTRAS_REQUIRE["tests"] + EXTRAS_REQUIRE["docs"] + ["wheel", "pre-commit"]
+)
 
 VERSION = find_meta("version")
 
 # README.md
-LONG = open('README.md').read()
+LONG = open("README.md").read()
 
 setup(
     name=NAME,

@@ -31,8 +31,8 @@ class TestFER(unittest.TestCase):
         first = result[0]
         mtcnn_first = mtcnn_result[0]
 
-        self.assertGreater(first['emotions']['happy'], 0.9)
-        self.assertGreater(mtcnn_first['emotions']['happy'], 0.9)
+        self.assertGreater(first["emotions"]["happy"], 0.9)
+        self.assertGreater(mtcnn_first["emotions"]["happy"], 0.9)
         self.assertIn("box", first)
         self.assertIn("emotions", first)
         self.assertTrue(len(first["box"]), 1)
@@ -77,14 +77,15 @@ class TestFER(unittest.TestCase):
 
         # Convert to pandas for analysis
         df = video.to_pandas(raw_data)
-        assert sum(df.neutral[:5] > 0.5) == 5, f"Expected neutral > 0.5, got {df.neutral[:5]}"
+        assert (
+            sum(df.neutral[:5] > 0.5) == 5
+        ), f"Expected neutral > 0.5, got {df.neutral[:5]}"
         assert isinstance(df, pd.DataFrame)
         assert "angry" in df
         df = video.get_first_face(df)
         assert isinstance(df, pd.DataFrame)
         df = video.get_emotions(df)
         assert isinstance(df, pd.DataFrame)
-
 
     def tearDownClass():
         global detector
