@@ -107,6 +107,13 @@ Other good examples of usage can be found in the files
 [example.py](example.py) and [video-example.py](video-example.py)
 located in the root of this repository.
 
+TF-SERVING
+==========
+
+Support running with online TF Serving docker image.
+
+To use: Run `docker-compose up` and initialize FER with `tfserving=True`.
+
 MODEL
 =====
 

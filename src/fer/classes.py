@@ -325,10 +325,10 @@ class Video(object):
 
         pbar.close()
         self._close_video(outfile, save_frames, zip_images)
-
         return self.to_format(frames_emotions, output)
 
     def to_format(self, data, format):
+        """Return data in format."""
         methods_lookup = {"csv": self.to_csv, "pandas": self.to_pandas}
         return methods_lookup[format](data)
 

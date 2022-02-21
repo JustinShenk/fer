@@ -31,6 +31,7 @@
 #
 import logging
 import pkg_resources
+import requests
 import sys
 from typing import Sequence, Tuple, Union
 
@@ -48,6 +49,7 @@ NumpyRects = Union[np.ndarray, Sequence[Tuple[int, int, int, int]]]
 __author__ = "Justin Shenk"
 
 PADDING = 40
+SERVER_URL = "http://localhost:8501/v1/models/emotion_model:predict"
 
 
 class FER(object):
@@ -61,27 +63,25 @@ class FER(object):
         self,
         cascade_file: str = None,
         mtcnn=False,
-        emotion_model: str = None,
+        tfserving: bool = False,
         scale_factor: float = 1.1,
         min_face_size: int = 50,
         min_neighbors: int = 5,
         offsets: tuple = (10, 10),
-        compile: bool = False,
     ):
         """
         Initializes the face detector and Keras model for facial expression recognition.
         :param cascade_file: file URI with the Haar cascade for face classification
         :param mtcnn: use MTCNN network for face detection (not yet implemented)
-        :param emotion_model: file URI with the Keras hdf5 model
         :param scale_factor: parameter specifying how much the image size is reduced at each image scale
         :param min_face_size: minimum size of the face to detect
         :param offsets: padding around face before classification
-        :param compile: value for Keras `compile` argument
         """
         self.__scale_factor = scale_factor
         self.__min_neighbors = min_neighbors
         self.__min_face_size = min_face_size
         self.__offsets = offsets
+        self.tfserving = tfserving
 
         if cascade_file is None:
             cascade_file = pkg_resources.resource_filename(
@@ -100,15 +100,34 @@ class FER(object):
         else:
             self.__face_detector = cv2.CascadeClassifier(cascade_file)
 
-        # Local Keras model
-        emotion_model = pkg_resources.resource_filename(
-            "fer", "data/emotion_model.hdf5"
-        )
-        self.__emotion_classifier = load_model(emotion_model, compile=compile)
-        self.__emotion_classifier.make_predict_function()
-        self.__emotion_target_size = self.__emotion_classifier.input_shape[1:3]
+        self._initialize_model()
 
-        log.debug("Emotion model: {}".format(emotion_model))
+    def _initialize_model(self):
+        if self.tfserving:
+            self.__emotion_target_size = (64, 64)  # hardcoded for now
+        else:
+            # Local Keras model
+            emotion_model = pkg_resources.resource_filename(
+                "fer", "data/emotion_model.hdf5"
+            )
+            log.debug("Emotion model: {}".format(emotion_model))
+            self.__emotion_classifier = load_model(emotion_model, compile=False)
+            self.__emotion_classifier.make_predict_function()
+            self.__emotion_target_size = self.__emotion_classifier.input_shape[1:3]
+        return
+
+    def _classify_emotions(self, gray_faces: np.ndarray) -> np.ndarray:  # b x w x h
+        """Run faces through online or offline classifier."""
+        if self.tfserving:
+            gray_faces = np.expand_dims(gray_faces, -1)  # to 4-dimensions
+            instances = gray_faces.tolist()
+            response = requests.post(SERVER_URL, json={"instances": instances})
+            response.raise_for_status()
+
+            emotion_predictions = response.json()["predictions"]
+            return emotion_predictions
+        else:
+            return self.__emotion_classifier(gray_faces)
 
     @staticmethod
     def pad(image):
@@ -255,9 +274,12 @@ class FER(object):
 
         # predict all faces
         if not len(gray_faces):
-            return emotions
+            return emotions  # no valid faces
 
-        emotion_predictions = self.__emotion_classifier(np.array(gray_faces))
+        # classify emotions
+        emotion_predictions = self._classify_emotions(np.array(gray_faces))
+
+        # label scores
         for face_idx, face in enumerate(emotion_predictions):
             labelled_emotions = {
                 emotion_labels[idx]: round(float(score), 2)

@@ -1,0 +1,8 @@
+version: "3.9"
+
+services:
+  tfserving:
+    image: "justinshenk/emotion_serving"
+    ports:
+      - "8501:8501"
+      - "8500:8500"
