@@ -29,24 +29,27 @@
 # (https://github.com/ipazc/mtcnn/) and Octavia Arriaga's facial expression recognition repo
 # (https://github.com/oarriaga/face_classification).
 #
+import logging
+import pkg_resources
 import sys
+from typing import Sequence, Tuple, Union
 
 import cv2
 import numpy as np
-import pkg_resources
-
-from typing import Sequence, Tuple, Union
 
 from tensorflow.keras.models import load_model
 
 from .exceptions import InvalidImage
-from .logger import log
+
+log = logging.getLogger("fer")
 
 NumpyRects = Union[np.ndarray, Sequence[Tuple[int, int, int, int]]]
 
 __author__ = "Justin Shenk"
 
 PADDING = 40
+
+
 class FER(object):
     """
     Allows performing Facial Expression Recognition ->
@@ -116,10 +119,10 @@ class FER(object):
 
         padded_image = cv2.copyMakeBorder(
             image,
-            top = PADDING,
-            bottom = PADDING,
-            left = PADDING,
-            right= PADDING,
+            top=PADDING,
+            bottom=PADDING,
+            left=PADDING,
+            right=PADDING,
             borderType=cv2.BORDER_CONSTANT,
             value=[mean, mean, mean],
         )
@@ -201,7 +204,9 @@ class FER(object):
             6: "neutral",
         }
 
-    def detect_emotions(self, img: np.ndarray, face_rectangles: NumpyRects = None) -> list:
+    def detect_emotions(
+        self, img: np.ndarray, face_rectangles: NumpyRects = None
+    ) -> list:
         """
         Detects bounding boxes from the specified image with ranking of emotions.
         :param img: image to process (BGR or gray)
@@ -220,40 +225,38 @@ class FER(object):
 
         emotions = []
         gray_faces = []
-        
+
         for face_coordinates in face_rectangles:
             face_coordinates = self.tosquare(face_coordinates)
-            
+
             # offset to expand bounding box
             # Note: x1 and y1 can be negative
             x1, x2, y1, y2 = self.__apply_offsets(face_coordinates)
-                        
+
             # account for padding in bounding box coordinates
             x1 += PADDING
-            y1 += PADDING      
+            y1 += PADDING
             x2 += PADDING
             y2 += PADDING
             x1 = np.clip(x1, a_min=0, a_max=None)
             y1 = np.clip(y1, a_min=0, a_max=None)
 
-            gray_face = gray_img[max(0, y1):y2,
-                                 max(0, x1):x2]
+            gray_face = gray_img[max(0, y1) : y2, max(0, x1) : x2]
 
             try:
                 gray_face = cv2.resize(gray_face, self.__emotion_target_size)
             except Exception as e:
                 log.warn("{} resize failed: {}".format(gray_face.shape, e))
                 continue
-            
+
             # Local Keras model
             gray_face = self.__preprocess_input(gray_face, True)
             gray_faces.append(gray_face)
 
         # predict all faces
-        # gray_faces_arr = 
         if not len(gray_faces):
             return emotions
-            
+
         emotion_predictions = self.__emotion_classifier(np.array(gray_faces))
         for face_idx, face in enumerate(emotion_predictions):
             labelled_emotions = {
@@ -269,7 +272,9 @@ class FER(object):
 
         return emotions
 
-    def top_emotion(self, img: np.ndarray)-> Tuple[Union[str,None], Union[float,None]]:
+    def top_emotion(
+        self, img: np.ndarray
+    ) -> Tuple[Union[str, None], Union[float, None]]:
         """Convenience wrapper for `detect_emotions` returning only top emotion for first face in frame.
         :param img: image to process
         :return: top emotion and score (for first face in frame) or (None, None)

@@ -9,9 +9,9 @@ from fer import FER, draw_annotations
 
 detector = FER(mtcnn=True)  # or with mtcnn=False for Haar Cascade Classifier
 
-if len(sys.argv) > 1:
+try:
     image_path = Path(sys.argv[1])
-else:
+except IndexError:
     image_path = Path("justin.jpg")
 
 image = cv2.imread(str(image_path.resolve()))

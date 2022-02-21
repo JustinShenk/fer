@@ -22,9 +22,14 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import logging
 
-from fer.classes import Video
-from fer.fer import FER
+from .classes import Video
+from .fer import FER
+from .utils import draw_annotations
+
+log = logging.getLogger("fer")
+log.setLevel(logging.INFO)
 
 __version__ = "22.0.1"
 

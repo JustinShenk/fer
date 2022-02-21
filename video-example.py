@@ -7,28 +7,24 @@ import matplotlib
 
 if os.name == "posix" and "DISPLAY" not in os.environ:
     matplotlib.use("Agg")
-
 import matplotlib.pyplot as plt
 
 from fer import FER, Video
 
-if __name__ == "__main__":
-    try:
-        videofile = sys.argv[1]
-    except:
-        videofile = "test.mp4"
-    detector = FER(mtcnn=True)
+videofile = sys.argv[1]  # test.mp4
 
-    video = Video(videofile)
+detector = FER(mtcnn=True)
 
-    # Output list of dictionaries
-    raw_data = video.analyze(detector, display=False)
+video = Video(videofile)
 
-    # Convert to pandas for analysis
-    df = video.to_pandas(raw_data)
-    df = video.get_first_face(df)
-    df = video.get_emotions(df)
+# Output list of dictionaries
+raw_data = video.analyze(detector, display=False)
 
-    # Plot emotions
-    df.plot()
-    plt.show()
+# Convert to pandas for analysis
+df = video.to_pandas(raw_data)
+df = video.get_first_face(df)
+df = video.get_emotions(df)
+
+# Plot emotions
+df.plot()
+plt.show()
