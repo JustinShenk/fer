@@ -31,7 +31,7 @@ from .utils import draw_annotations
 log = logging.getLogger("fer")
 log.setLevel(logging.INFO)
 
-__version__ = "22.0.1"
+__version__ = "22.1.0"
 
 __title__ = "fer"
 __description__ = "Facial expression recognition from images"
