@@ -26,7 +26,6 @@ import logging
 
 from .classes import Video
 from .fer import FER
-from .utils import draw_annotations
 
 log = logging.getLogger("fer")
 log.setLevel(logging.INFO)

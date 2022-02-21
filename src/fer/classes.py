@@ -14,7 +14,6 @@ import pandas as pd
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 
-# from .logger import log
 from .utils import draw_annotations
 
 log = logging.getLogger("fer")
