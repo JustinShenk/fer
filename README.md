@@ -112,7 +112,7 @@ TF-SERVING
 
 Support running with online TF Serving docker image.
 
-To use: Run `docker-compose up` and initialize FER with `tfserving=True`.
+To use: Run `docker-compose up` and initialize FER with `FER(..., tfserving=True)`.
 
 MODEL
 =====
