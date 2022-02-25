@@ -21,7 +21,7 @@ class TestFER(unittest.TestCase):
         FER is able to detect faces in an image
         :return:
         """
-        justin = cv2.imread("justin.jpg")
+        justin = "justin.jpg"
 
         result = detector.detect_emotions(justin)  # type: list
         mtcnn_result = mtcnn_detector.detect_emotions(justin)  # type: list
@@ -45,7 +45,7 @@ class TestFER(unittest.TestCase):
         justin = cv2.imread("example.py")
 
         with self.assertRaises(InvalidImage):
-            result = detector.detect_emotions(justin)  # type: list
+            _ = detector.detect_emotions(justin)  # type: list
 
     def test_detect_no_faces_on_no_faces_content(self):
         """

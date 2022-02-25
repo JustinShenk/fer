@@ -30,6 +30,7 @@
 # (https://github.com/oarriaga/face_classification).
 #
 import logging
+import os
 import pkg_resources
 import requests
 import sys
@@ -40,8 +41,9 @@ import numpy as np
 
 from tensorflow.keras.models import load_model
 
-from .exceptions import InvalidImage
+from .utils import load_image
 
+logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("fer")
 
 NumpyRects = Union[np.ndarray, Sequence[Tuple[int, int, int, int]]]
@@ -228,11 +230,11 @@ class FER(object):
     ) -> list:
         """
         Detects bounding boxes from the specified image with ranking of emotions.
-        :param img: image to process (BGR or gray)
+        :param img: exact image path, numpy array (BGR or gray) or based64 encoded images
+        could be passed.
         :return: list containing all the bounding boxes detected with their emotions.
         """
-        if img is None or not hasattr(img, "shape"):
-            raise InvalidImage("Image not valid.")
+        img = load_image(img)
 
         emotion_labels = self._get_labels()
 
