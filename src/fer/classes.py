@@ -175,14 +175,14 @@ class Video(object):
             )
         return faces
 
-    def _increment_frames(self, frame, faces, video_id, root):
+    def _increment_frames(self, frame, faces, video_id, root, lang = "en"):
         # Save images to `self.outdir`
         imgpath = os.path.join(
             self.outdir, (video_id or root) + str(self.frameCount) + ".jpg"
         )
 
         if self.annotate_frames:
-            frame = draw_annotations(frame, faces, boxes=True, scores=True)
+            frame = draw_annotations(frame, faces, boxes=True, scores=True, lang=lang)
 
         if self.save_frames:
             cv2.imwrite(imgpath, frame)
@@ -209,6 +209,7 @@ class Video(object):
         annotate_frames: bool = True,
         zip_images: bool = True,
         detection_box: Optional[dict] = None,
+        lang: str = "en"
     ) -> list:
         """Recognize facial expressions in video using `detector`.
 
@@ -309,7 +310,7 @@ class Video(object):
             if detection_box is not None:
                 faces = self._offset_detection_box(faces, detection_box)
 
-            self._increment_frames(frame, faces, video_id, root)
+            self._increment_frames(frame, faces, video_id, root, lang)
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
