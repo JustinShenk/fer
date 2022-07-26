@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from exceptions import InvalidImage
+from .exceptions import InvalidImage
 from .emotionsmultilanguage import emotions_dict
 
 def draw_annotations(
