@@ -42,7 +42,7 @@ installed with pip:
 ```bash
 $ pip install tensorflow-gpu\>=1.7.0
 ```
-To extract videos that includes sound, ffmpeg moviepy package must be installed with pip:
+To extract videos that includes sound, ffmpeg and moviepy packages must be installed with pip:
 
 ```bash
 $ pip install ffmpeg moviepy 
