@@ -4,6 +4,7 @@ import csv
 import logging
 import os
 import re
+from moviepy.editor import *
 from pathlib import Path
 from typing import Optional, Union
 from zipfile import ZipFile
@@ -209,7 +210,8 @@ class Video(object):
         annotate_frames: bool = True,
         zip_images: bool = True,
         detection_box: Optional[dict] = None,
-        lang: str = "en"
+        lang: str = "en",
+        include_audio: bool = False,
     ) -> list:
         """Recognize facial expressions in video using `detector`.
 
@@ -227,6 +229,8 @@ class Video(object):
             annotate_frames (bool): add emotion labels
             zip_images (bool): compress output
             detection_box (dict): dict with bounding box for subimage (xmin, xmax, ymin, ymax)
+            lang (str): emotion language that will be shown on video
+            include_audio (bool): indicates if a sounded version of the prediction video should be created or not
 
         Returns:
 
@@ -326,6 +330,16 @@ class Video(object):
 
         pbar.close()
         self._close_video(outfile, save_frames, zip_images)
+
+        if include_audio:
+            audio_suffix = "_audio."
+            my_audio = AudioFileClip(self.filepath)
+            new_audioclip = CompositeAudioClip([my_audio])
+
+            my_output_clip = VideoFileClip(outfile)
+            my_output_clip.audio = new_audioclip
+            my_output_clip.write_videofile(audio_suffix.join(outfile.rsplit(".", 1)))
+
         return self.to_format(frames_emotions, output)
 
     def to_format(self, data, format):
