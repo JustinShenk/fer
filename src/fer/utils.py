@@ -16,6 +16,7 @@ def draw_annotations(
     scores=True,
     color: tuple = (0, 155, 255),
     lang: str = "en",
+    size_multiplier: int = 1
 ) -> np.ndarray:
     """Draws boxes around detected faces. Faces is a list of dicts with `box` and `emotions`."""
     if not len(faces):
@@ -34,7 +35,7 @@ def draw_annotations(
             )
 
         if scores:
-            frame = draw_scores(frame, emotions, (x, y, w, h), lang)
+            frame = draw_scores(frame, emotions, (x, y, w, h), lang, size_multiplier)
     return frame
 
 
@@ -77,9 +78,13 @@ def load_image(img):
     return img
 
 
-
-
-def draw_scores(frame: np.ndarray, emotions: dict, bounding_box: dict, lang: str = "en") -> np.ndarray:
+def draw_scores(
+    frame: np.ndarray,
+    emotions: dict,
+    bounding_box: dict,
+    lang: str = "en",
+    size_multiplier: int = 1
+) -> np.ndarray:
     """Draw scores for each emotion under faces."""
     GRAY = (211, 211, 211)
     GREEN = (0, 255, 0)
@@ -87,7 +92,7 @@ def draw_scores(frame: np.ndarray, emotions: dict, bounding_box: dict, lang: str
 
     for idx, (emotion, score) in enumerate(emotions.items()):
         color = GRAY if score < 0.01 else GREEN
-        
+
         if lang != "en":
             emotion = emotions_dict[emotion][lang]
 
@@ -99,12 +104,12 @@ def draw_scores(frame: np.ndarray, emotions: dict, bounding_box: dict, lang: str
             emotion_score,
             (
                 x,
-                y + h + 15 + idx * 15,
+                y + h + (15 * size_multiplier) + idx * (15 * size_multiplier),
             ),
             cv2.FONT_HERSHEY_SIMPLEX,
-            0.5,
+            0.5 * size_multiplier,
             color,
-            1,
+            1 * size_multiplier,
             cv2.LINE_AA,
         )
     return frame
