@@ -86,9 +86,7 @@ class FER(object):
         self.tfserving = tfserving
 
         if cascade_file is None:
-            cascade_file = pkg_resources.resource_filename(
-                "fer", "data/haarcascade_frontalface_default.xml"
-            )
+            cascade_file = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
 
         if mtcnn:
             try:
