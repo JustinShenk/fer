@@ -7,3 +7,5 @@ Pillow
 requests
 mtcnn>=0.1.1
 tqdm>=4.62.1
+moviepy==1.0.3
+ffmpeg==1.4
