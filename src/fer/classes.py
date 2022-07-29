@@ -4,6 +4,7 @@ import csv
 import logging
 import os
 import re
+from moviepy.editor import *
 from pathlib import Path
 from typing import Optional, Union
 from zipfile import ZipFile
@@ -175,14 +176,14 @@ class Video(object):
             )
         return faces
 
-    def _increment_frames(self, frame, faces, video_id, root, lang = "en"):
+    def _increment_frames(self, frame, faces, video_id, root, lang = "en", size_multiplier=1):
         # Save images to `self.outdir`
         imgpath = os.path.join(
             self.outdir, (video_id or root) + str(self.frameCount) + ".jpg"
         )
 
         if self.annotate_frames:
-            frame = draw_annotations(frame, faces, boxes=True, scores=True, lang=lang)
+            frame = draw_annotations(frame, faces, boxes=True, scores=True, lang=lang, size_multiplier=size_multiplier)
 
         if self.save_frames:
             cv2.imwrite(imgpath, frame)
@@ -209,7 +210,9 @@ class Video(object):
         annotate_frames: bool = True,
         zip_images: bool = True,
         detection_box: Optional[dict] = None,
-        lang: str = "en"
+        lang: str = "en",
+        include_audio: bool = False,
+        size_multiplier: int = 1
     ) -> list:
         """Recognize facial expressions in video using `detector`.
 
@@ -227,7 +230,9 @@ class Video(object):
             annotate_frames (bool): add emotion labels
             zip_images (bool): compress output
             detection_box (dict): dict with bounding box for subimage (xmin, xmax, ymin, ymax)
-
+            lang (str): emotion language that will be shown on video
+            include_audio (bool): indicates if a sounded version of the prediction video should be created or not
+            size_multiplier (int): increases the size of emotion labels shown in the video by x(size_multiplier)
         Returns:
 
             data (list): list of results
@@ -310,7 +315,7 @@ class Video(object):
             if detection_box is not None:
                 faces = self._offset_detection_box(faces, detection_box)
 
-            self._increment_frames(frame, faces, video_id, root, lang)
+            self._increment_frames(frame, faces, video_id, root, lang, size_multiplier)
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
@@ -326,6 +331,16 @@ class Video(object):
 
         pbar.close()
         self._close_video(outfile, save_frames, zip_images)
+
+        if include_audio:
+            audio_suffix = "_audio."
+            my_audio = AudioFileClip(self.filepath)
+            new_audioclip = CompositeAudioClip([my_audio])
+
+            my_output_clip = VideoFileClip(outfile)
+            my_output_clip.audio = new_audioclip
+            my_output_clip.write_videofile(audio_suffix.join(outfile.rsplit(".", 1)))
+
         return self.to_format(frames_emotions, output)
 
     def to_format(self, data, format):
