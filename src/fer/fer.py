@@ -38,7 +38,7 @@ from typing import Sequence, Tuple, Union
 
 import cv2
 import numpy as np
-
+import dlib
 from tensorflow.keras.models import load_model
 
 from .utils import load_image
