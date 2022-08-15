@@ -64,7 +64,7 @@ class FER(object):
     def __init__(
         self,
         cascade_file: str = None,
-        dlib=False,
+        dlibrary=False,
         tfserving: bool = False,
         scale_factor: float = 1.1,
         min_face_size: int = 50,
@@ -88,7 +88,7 @@ class FER(object):
         if cascade_file is None:
             cascade_file = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
 
-        if mtcnn:
+        if dlibrary:
 
             self.__face_detector = "dlib"
             self._dlib = dlib.get_frontal_face_detector()
