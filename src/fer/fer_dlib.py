@@ -190,7 +190,7 @@ class FER(object):
             for counter,face in enumerate(results):
                x1, y1 = face.left(), face.top()
                x2, y2 = face.right(), face.bottom()
-               faces.append([x1,y1,x2-x1,y2-y1]
+               faces.append([x1,y1,x2-x1,y2-y1])
             return faces
 
     @staticmethod
