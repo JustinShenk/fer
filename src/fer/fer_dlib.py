@@ -191,7 +191,7 @@ class FER(object):
                x1, y1 = face.left(), face.top()
                x2, y2 = face.right(), face.bottom()
                faces.append([x1,y1,x2-x1,y2-y1]
-        return faces
+            return faces
 
     @staticmethod
     def __preprocess_input(x, v2=False):
