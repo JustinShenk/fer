@@ -38,7 +38,7 @@ from typing import Sequence, Tuple, Union
 
 import cv2
 import numpy as np
-
+import dlib
 from tensorflow.keras.models import load_model
 
 from .utils import load_image
@@ -89,9 +89,14 @@ class FER(object):
             cascade_file = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
 
         if dlibrary:
-
+            try:
+                from dlib import get_frontal_face_detector
+            except ImportError:
+                raise Exception(
+                    "dlib not installed, install it with pip install dlib"
+                )
             self.__face_detector = "dlib"
-            self._dlib = dlib.get_frontal_face_detector()
+            self.__dlib = get_frontal_face_detector
         else:
             self.__face_detector = cv2.CascadeClassifier(cascade_file)
 
@@ -180,7 +185,7 @@ class FER(object):
                 minSize=(self.__min_face_size, self.__min_face_size),
             )
         elif self.__face_detector == "dlib":
-            results = self._dlib(img)
+            results = self.__dlib(img)
             faces=[]
             for counter,face in enumerate(results):
                x1, y1 = face.left(), face.top()
