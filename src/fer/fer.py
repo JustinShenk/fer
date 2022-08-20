@@ -96,7 +96,7 @@ class FER(object):
                     "dlib not installed, install it with pip install dlib"
                 )
             self.__face_detector = "dlib"
-            self.__dlib = get_frontal_face_detector
+            self.__dlib = get_frontal_face_detector()
         else:
             self.__face_detector = cv2.CascadeClassifier(cascade_file)
 
