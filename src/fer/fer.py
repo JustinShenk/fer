@@ -38,8 +38,11 @@ from typing import Sequence, Tuple, Union
 
 import cv2
 import numpy as np
-import dlib
+
 from tensorflow.keras.models import load_model
+
+pip install facenet-pytorch
+from facenet_pytorch import MTCNN
 
 from .utils import load_image
 
@@ -64,7 +67,7 @@ class FER(object):
     def __init__(
         self,
         cascade_file: str = None,
-        dlibrary=False,
+        mtcnn=False,
         tfserving: bool = False,
         scale_factor: float = 1.1,
         min_face_size: int = 50,
@@ -88,15 +91,15 @@ class FER(object):
         if cascade_file is None:
             cascade_file = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
 
-        if dlibrary:
+        if mtcnn:
             try:
-                from dlib import get_frontal_face_detector
+                from facenet_pytorch import MTCNN
             except ImportError:
                 raise Exception(
-                    "dlib not installed, install it with pip install dlib"
+                    "MTCNN not installed, install it with pip install mtcnn"
                 )
-            self.__face_detector = "dlib"
-            self.__dlib = get_frontal_face_detector()
+            self.__face_detector = "mtcnn"
+            self._mtcnn = MTCNN(keep_all=True, device='cuda:0')
         else:
             self.__face_detector = cv2.CascadeClassifier(cascade_file)
 
@@ -184,14 +187,13 @@ class FER(object):
                 flags=cv2.CASCADE_SCALE_IMAGE,
                 minSize=(self.__min_face_size, self.__min_face_size),
             )
-        elif self.__face_detector == "dlib":
-            results = self.__dlib(img)
+        elif self.__face_detector == "mtcnn":
+            boxes,probs = self._mtcnn.detect(img)
             faces=[]
-            for counter,face in enumerate(results):
-               x1, y1 = face.left(), face.top()
-               x2, y2 = face.right(), face.bottom()
-               faces.append([x1,y1,x2-x1,y2-y1])
-            return faces
+            for face in boxes
+            faces.append([int(face[0]),int(face[1]),int(face[2])-int(face[0]),int(face[3])-int(face[1]))
+            
+        return faces
 
     @staticmethod
     def __preprocess_input(x, v2=False):
