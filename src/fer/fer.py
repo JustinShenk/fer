@@ -189,8 +189,8 @@ class FER(object):
         elif self.__face_detector == "mtcnn":
             boxes,probs = self._mtcnn.detect(img)
             faces=[]
-            for face in boxes
-            faces.append([int(face[0]),int(face[1]),int(face[2])-int(face[0]),int(face[3])-int(face[1]))
+            for face in boxes:
+             faces.append([int(face[0]),int(face[1]),int(face[2])-int(face[0]),int(face[3])-int(face[1]))
             
         return faces
 
