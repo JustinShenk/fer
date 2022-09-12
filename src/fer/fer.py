@@ -189,6 +189,7 @@ class FER(object):
         elif self.__face_detector == "mtcnn":
             boxes,probs = self._mtcnn.detect(img)
             faces=[]
+            print(boxes)
             if boxes:
                 print('fu')
                 for face in boxes:
