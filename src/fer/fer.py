@@ -190,12 +190,11 @@ class FER(object):
             boxes,probs = self._mtcnn.detect(img)
             faces=[]
             print(boxes)
-            if boxes:
-                print('fu')
-                for face in boxes:
-                 faces.append([int(face[0]),int(face[1]),int(face[2])-int(face[0]),int(face[3])-int(face[1])])
-            else:
-                print('f')
+            print(boxes[0])
+            face=boxes[0]
+
+            faces.append([int(face[0]),int(face[1]),int(face[2])-int(face[0]),int(face[3])-int(face[1])])
+
             
             return faces
 
