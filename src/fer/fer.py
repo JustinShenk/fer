@@ -41,7 +41,6 @@ import numpy as np
 
 from tensorflow.keras.models import load_model
 
-!pip install facenet-pytorch
 from facenet_pytorch import MTCNN
 
 from .utils import load_image
