@@ -189,7 +189,7 @@ class FER(object):
         elif self.__face_detector == "mtcnn":
             boxes,probs = self._mtcnn.detect(img)
             faces=[]
-            if type(boxes)!=None:
+            if type(boxes)==np.ndarray:
              for face in boxes:
               faces.append([int(face[0]),int(face[1]),int(face[2])-int(face[0]),int(face[3])-int(face[1])])
  
