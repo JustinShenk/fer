@@ -249,33 +249,33 @@ class FER(object):
 
         emotions = []
         gray_faces = []
+        if face_rectangles is not None:
+            for face_coordinates in face_rectangles:
+                face_coordinates = self.tosquare(face_coordinates)
 
-        for face_coordinates in face_rectangles:
-            face_coordinates = self.tosquare(face_coordinates)
+                # offset to expand bounding box
+                # Note: x1 and y1 can be negative
+                x1, x2, y1, y2 = self.__apply_offsets(face_coordinates)
 
-            # offset to expand bounding box
-            # Note: x1 and y1 can be negative
-            x1, x2, y1, y2 = self.__apply_offsets(face_coordinates)
+                # account for padding in bounding box coordinates
+                x1 += PADDING
+                y1 += PADDING
+                x2 += PADDING
+                y2 += PADDING
+                x1 = np.clip(x1, a_min=0, a_max=None)
+                y1 = np.clip(y1, a_min=0, a_max=None)
 
-            # account for padding in bounding box coordinates
-            x1 += PADDING
-            y1 += PADDING
-            x2 += PADDING
-            y2 += PADDING
-            x1 = np.clip(x1, a_min=0, a_max=None)
-            y1 = np.clip(y1, a_min=0, a_max=None)
+                gray_face = gray_img[max(0, y1) : y2, max(0, x1) : x2]
 
-            gray_face = gray_img[max(0, y1) : y2, max(0, x1) : x2]
+                try:
+                    gray_face = cv2.resize(gray_face, self.__emotion_target_size)
+                except Exception as e:
+                    log.warn("{} resize failed: {}".format(gray_face.shape, e))
+                    continue
 
-            try:
-                gray_face = cv2.resize(gray_face, self.__emotion_target_size)
-            except Exception as e:
-                log.warn("{} resize failed: {}".format(gray_face.shape, e))
-                continue
-
-            # Local Keras model
-            gray_face = self.__preprocess_input(gray_face, True)
-            gray_faces.append(gray_face)
+                # Local Keras model
+                gray_face = self.__preprocess_input(gray_face, True)
+                gray_faces.append(gray_face)
 
         # predict all faces
         if not len(gray_faces):
