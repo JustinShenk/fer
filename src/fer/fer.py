@@ -193,7 +193,7 @@ class FER(object):
              for face in boxes:
               faces.append([int(face[0]),int(face[1]),int(face[2])-int(face[0]),int(face[3])-int(face[1])])
  
-       return faces
+        return faces
 
     @staticmethod
     def __preprocess_input(x, v2=False):
