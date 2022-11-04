@@ -86,15 +86,13 @@ class FER(object):
         self.tfserving = tfserving
 
         if cascade_file is None:
-            cascade_file = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+            cascade_file = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
 
         if dlibrary:
             try:
                 from dlib import get_frontal_face_detector
             except ImportError:
-                raise Exception(
-                    "dlib not installed, install it with pip install dlib"
-                )
+                raise Exception("dlib not installed, install it with pip install dlib")
             self.__face_detector = "dlib"
             self.__dlib = get_frontal_face_detector()
         else:
@@ -186,11 +184,11 @@ class FER(object):
             )
         elif self.__face_detector == "dlib":
             results = self.__dlib(img)
-            faces=[]
-            for counter,face in enumerate(results):
-               x1, y1 = face.left(), face.top()
-               x2, y2 = face.right(), face.bottom()
-               faces.append([x1,y1,x2-x1,y2-y1])
+            faces = []
+            for counter, face in enumerate(results):
+                x1, y1 = face.left(), face.top()
+                x2, y2 = face.right(), face.bottom()
+                faces.append([x1, y1, x2 - x1, y2 - y1])
             return faces
 
     @staticmethod

@@ -10,11 +10,11 @@ Languages Added:
 """
 
 emotions_dict = {
-"angry":{"tr":"Kizgin", "de":"Wutend"},
-"disgust":{"tr":"Igrenme", "de":"der Ekel"},
-"fear":{"tr":"Korku", "de":"Furcht"},
-"happy":{"tr":"Mutluluk", "de":"Glucklich"},
-"sad":{"tr":"Uzuntu", "de":"Traurig"},
-"surprise":{"tr":"Saskinlik", "de":"Uberraschung"},
-"neutral":{"tr":"Notr", "de":"Neutral"}
+    "angry": {"tr": "Kizgin", "de": "Wutend"},
+    "disgust": {"tr": "Igrenme", "de": "der Ekel"},
+    "fear": {"tr": "Korku", "de": "Furcht"},
+    "happy": {"tr": "Mutluluk", "de": "Glucklich"},
+    "sad": {"tr": "Uzuntu", "de": "Traurig"},
+    "surprise": {"tr": "Saskinlik", "de": "Uberraschung"},
+    "neutral": {"tr": "Notr", "de": "Neutral"},
 }
