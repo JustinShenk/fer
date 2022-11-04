@@ -88,7 +88,7 @@ class FER(object):
         self.tfserving = tfserving
 
         if cascade_file is None:
-            cascade_file = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+            cascade_file = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
 
         if mtcnn:
             try:
@@ -98,7 +98,7 @@ class FER(object):
                     "MTCNN not installed, install it with pip install mtcnn"
                 )
             self.__face_detector = "mtcnn"
-            self._mtcnn = MTCNN(keep_all=True, device='cuda:0')
+            self._mtcnn = MTCNN(keep_all=True, device="cuda:0")
         else:
             self.__face_detector = cv2.CascadeClassifier(cascade_file)
 
@@ -187,12 +187,19 @@ class FER(object):
                 minSize=(self.__min_face_size, self.__min_face_size),
             )
         elif self.__face_detector == "mtcnn":
-            boxes,probs = self._mtcnn.detect(img)
-            faces=[]
-            if type(boxes)==np.ndarray:
-             for face in boxes:
-              faces.append([int(face[0]),int(face[1]),int(face[2])-int(face[0]),int(face[3])-int(face[1])])
- 
+            boxes, probs = self._mtcnn.detect(img)
+            faces = []
+            if type(boxes) == np.ndarray:
+                for face in boxes:
+                    faces.append(
+                        [
+                            int(face[0]),
+                            int(face[1]),
+                            int(face[2]) - int(face[0]),
+                            int(face[3]) - int(face[1]),
+                        ]
+                    )
+
         return faces
 
     @staticmethod
