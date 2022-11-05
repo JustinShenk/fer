@@ -19,7 +19,7 @@ def cli():
 
 
 @cli.command()
-@click.argument("device", default=0)
+@click.argument("device", default=-1)
 @click.option("--mtcnn", is_flag=True)
 def webcam(device, mtcnn):
     detector = FER(mtcnn=mtcnn)
