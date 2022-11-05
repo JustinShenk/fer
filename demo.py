@@ -68,7 +68,7 @@ def image(image_path, mtcnn):
 
 @cli.command()
 @click.argument("video-file", default="tests/test.mp4", type=click.Path(exists=True))
-@click.option("--mtcnn", is_flag=True, help=mtcnn_help)
+@click.option("--mtcnn", is_flag=True)
 def video(video_file, mtcnn):
     video = Video(video_file)
     detector = FER(mtcnn=mtcnn)
