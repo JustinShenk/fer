@@ -94,7 +94,7 @@ class FER(object):
                 from facenet_pytorch import MTCNN
             except ImportError:
                 raise Exception(
-                    "MTCNN not installed, install it with pip install facenet_pytorch and from facenet_pytorch import MTCNN"
+                    "MTCNN not installed, install it with pip install facenet-pytorch and from facenet_pytorch import MTCNN"
                 )
             self.__face_detector = "mtcnn"
             self._mtcnn = MTCNN(keep_all=True, device="cuda:0")
