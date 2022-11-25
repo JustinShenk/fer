@@ -41,7 +41,6 @@ import numpy as np
 
 from tensorflow.keras.models import load_model
 
-from facenet_pytorch import MTCNN
 
 from .utils import load_image
 
@@ -95,7 +94,7 @@ class FER(object):
                 from facenet_pytorch import MTCNN
             except ImportError:
                 raise Exception(
-                    "MTCNN not installed, install it with pip install mtcnn"
+                    "MTCNN not installed, install it with pip install facenet_pytorch and from facenet_pytorch import MTCNN"
                 )
             self.__face_detector = "mtcnn"
             self._mtcnn = MTCNN(keep_all=True, device="cuda:0")
