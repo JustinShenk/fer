@@ -30,7 +30,7 @@ from .fer import FER
 log = logging.getLogger("fer")
 log.setLevel(logging.INFO)
 
-__version__ = "22.3.0"
+__version__ = "22.5.0"
 
 __title__ = "fer"
 __description__ = "Facial expression recognition from images"

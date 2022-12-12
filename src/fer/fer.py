@@ -41,6 +41,7 @@ import numpy as np
 
 from tensorflow.keras.models import load_model
 
+
 from .utils import load_image
 
 logging.basicConfig(level=logging.INFO)
@@ -86,17 +87,17 @@ class FER(object):
         self.tfserving = tfserving
 
         if cascade_file is None:
-            cascade_file = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+            cascade_file = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
 
         if mtcnn:
             try:
-                from mtcnn.mtcnn import MTCNN
+                from facenet_pytorch import MTCNN
             except ImportError:
                 raise Exception(
-                    "MTCNN not installed, install it with pip install mtcnn"
+                    "MTCNN not installed, install it with pip install facenet-pytorch and from facenet_pytorch import MTCNN"
                 )
             self.__face_detector = "mtcnn"
-            self._mtcnn = MTCNN()
+            self._mtcnn = MTCNN(keep_all=True)
         else:
             self.__face_detector = cv2.CascadeClassifier(cascade_file)
 
@@ -185,8 +186,18 @@ class FER(object):
                 minSize=(self.__min_face_size, self.__min_face_size),
             )
         elif self.__face_detector == "mtcnn":
-            results = self._mtcnn.detect_faces(img)
-            faces = [x["box"] for x in results]
+            boxes, probs = self._mtcnn.detect(img)
+            faces = []
+            if type(boxes) == np.ndarray:
+                for face in boxes:
+                    faces.append(
+                        [
+                            int(face[0]),
+                            int(face[1]),
+                            int(face[2]) - int(face[0]),
+                            int(face[3]) - int(face[1]),
+                        ]
+                    )
 
         return faces
 
@@ -244,33 +255,33 @@ class FER(object):
 
         emotions = []
         gray_faces = []
+        if face_rectangles is not None:
+            for face_coordinates in face_rectangles:
+                face_coordinates = self.tosquare(face_coordinates)
 
-        for face_coordinates in face_rectangles:
-            face_coordinates = self.tosquare(face_coordinates)
+                # offset to expand bounding box
+                # Note: x1 and y1 can be negative
+                x1, x2, y1, y2 = self.__apply_offsets(face_coordinates)
 
-            # offset to expand bounding box
-            # Note: x1 and y1 can be negative
-            x1, x2, y1, y2 = self.__apply_offsets(face_coordinates)
+                # account for padding in bounding box coordinates
+                x1 += PADDING
+                y1 += PADDING
+                x2 += PADDING
+                y2 += PADDING
+                x1 = np.clip(x1, a_min=0, a_max=None)
+                y1 = np.clip(y1, a_min=0, a_max=None)
 
-            # account for padding in bounding box coordinates
-            x1 += PADDING
-            y1 += PADDING
-            x2 += PADDING
-            y2 += PADDING
-            x1 = np.clip(x1, a_min=0, a_max=None)
-            y1 = np.clip(y1, a_min=0, a_max=None)
+                gray_face = gray_img[max(0, y1) : y2, max(0, x1) : x2]
 
-            gray_face = gray_img[max(0, y1) : y2, max(0, x1) : x2]
+                try:
+                    gray_face = cv2.resize(gray_face, self.__emotion_target_size)
+                except Exception as e:
+                    log.warn("{} resize failed: {}".format(gray_face.shape, e))
+                    continue
 
-            try:
-                gray_face = cv2.resize(gray_face, self.__emotion_target_size)
-            except Exception as e:
-                log.warn("{} resize failed: {}".format(gray_face.shape, e))
-                continue
-
-            # Local Keras model
-            gray_face = self.__preprocess_input(gray_face, True)
-            gray_faces.append(gray_face)
+                # Local Keras model
+                gray_face = self.__preprocess_input(gray_face, True)
+                gray_faces.append(gray_face)
 
         # predict all faces
         if not len(gray_faces):

@@ -9,6 +9,7 @@ from PIL import Image
 from .exceptions import InvalidImage
 from .emotionsmultilanguage import emotions_dict
 
+
 def draw_annotations(
     frame: np.ndarray,
     faces: list,
@@ -16,7 +17,7 @@ def draw_annotations(
     scores=True,
     color: tuple = (0, 155, 255),
     lang: str = "en",
-    size_multiplier: int = 1
+    size_multiplier: int = 1,
 ) -> np.ndarray:
     """Draws boxes around detected faces. Faces is a list of dicts with `box` and `emotions`."""
     if not len(faces):
@@ -83,7 +84,7 @@ def draw_scores(
     emotions: dict,
     bounding_box: dict,
     lang: str = "en",
-    size_multiplier: int = 1
+    size_multiplier: int = 1,
 ) -> np.ndarray:
     """Draw scores for each emotion under faces."""
     GRAY = (211, 211, 211)
