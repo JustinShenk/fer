@@ -19,8 +19,8 @@ def cli():
 
 
 @cli.command()
-@click.argument("device", default=-1)
-@click.option("--mtcnn", is_flag=True)
+@click.argument("device", default=0, help="webcam device (usually 0 or 1)")
+@click.option("--mtcnn", is_flag=True, help=mtcnn_help)
 def webcam(device, mtcnn):
     detector = FER(mtcnn=mtcnn)
     cap = cv2.VideoCapture(device)
@@ -52,7 +52,7 @@ def webcam(device, mtcnn):
 
 @cli.command()
 @click.argument("image_path", default="justin.jpg", type=click.Path(exists=True))
-@click.option("--mtcnn", is_flag=True)
+@click.option("--mtcnn", is_flag=True, help=mtcnn_help)
 def image(image_path, mtcnn):
     image_path = Path(image_path)
     detector = FER(mtcnn=mtcnn)
@@ -68,7 +68,7 @@ def image(image_path, mtcnn):
 
 @cli.command()
 @click.argument("video-file", default="tests/test.mp4", type=click.Path(exists=True))
-@click.option("--mtcnn", is_flag=True)
+@click.option("--mtcnn", is_flag=True, help=mtcnn_help)
 def video(video_file, mtcnn):
     video = Video(video_file)
     detector = FER(mtcnn=mtcnn)
