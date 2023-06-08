@@ -66,7 +66,11 @@ INSTALL_REQUIRES = [
     "pandas",
     "requests",
     "facenet-pytorch",
-    "tqdm",
+    "tqdm>=4.62.1",
+    "moviepy",
+    "facenet-pytorch",
+    "ffmpeg==1.4",
+    "Pillow",
 ]
 
 EXTRAS_REQUIRE = {"docs": ["sphinx"], "tests": ["coverage", "pytest"]}
