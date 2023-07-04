@@ -98,7 +98,7 @@ class FER(object):
                 )
             self.__face_detector = "mtcnn"
 
-            # use GPU is available
+            # use cuda GPU if available
             import torch
             if torch.cuda.is_available() and torch.cuda.device_count() > 0:
                 device = torch.device('cuda')
