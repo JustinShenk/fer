@@ -97,7 +97,14 @@ class FER(object):
                     "MTCNN not installed, install it with pip install facenet-pytorch and from facenet_pytorch import MTCNN"
                 )
             self.__face_detector = "mtcnn"
-            self._mtcnn = MTCNN(keep_all=True)
+
+            # use GPU is available
+            import torch
+            if torch.cuda.is_available() and torch.cuda.device_count() > 0:
+                device = torch.device('cuda')
+                self._mtcnn = MTCNN(keep_all=True, device=device)
+            else:
+                self._mtcnn = MTCNN(keep_all=True)
         else:
             self.__face_detector = cv2.CascadeClassifier(cascade_file)
 
