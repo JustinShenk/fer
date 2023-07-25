@@ -294,8 +294,12 @@ class Video(object):
         if save_video:
             self.videowriter = self._save_video(outfile, fps, width, height)
 
+        total_frames = length
+        if frequency > 1:
+            total_frames = length/frequency
+            
         with logging_redirect_tqdm():
-            pbar = tqdm(total=length, unit="frames")
+            pbar = tqdm(total=total_frames, unit="frames")
 
         while self.cap.isOpened():
             ret, frame = self.cap.read()
