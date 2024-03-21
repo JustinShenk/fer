@@ -117,7 +117,7 @@ class Video(object):
 
     @staticmethod
     def get_emotions(df: pd.DataFrame) -> list:
-        """Get emotion columsn from results."""
+        """Get emotion columns from results."""
         columns = [x for x in df.columns if "box" not in x]
         return df[columns]
 
