@@ -29,7 +29,7 @@ class Video(object):
         tempfile: Optional[str] = None,
     ):
         """Video class for extracting and saving frames for emotion detection.
-        param video_file - str
+        :param video_file - str
         :param outdir - str
         :param tempdir - str
         :param first_face_only - bool
@@ -53,12 +53,12 @@ class Video(object):
     @staticmethod
     def get_max_faces(data: list) -> int:
         """Get max number of faces detected in a series of frames, eg 3"""
-        max_faces = 0
+        max = 0
         for frame in data:
             for face in frame:
-                if len(face) > max_faces:
-                    max_faces = len(face)
-        return max_faces
+                if len(face) > max:
+                    max = len(face)
+        return max
 
     @staticmethod
     def _to_dict(data: Union[dict, list]) -> dict:
