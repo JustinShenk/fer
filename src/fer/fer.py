@@ -343,7 +343,7 @@ def parse_arguments(args):
     return parser.parse_args()
 
 
-def top_emotion():
+def get_top_emotion():
     args = parse_arguments(sys.argv)
     fer = FER()
     top_emotion, score = fer.top_emotion(args.image)
@@ -351,7 +351,7 @@ def top_emotion():
 
 
 def main():
-    top_emotion()
+    get_top_emotion()
 
 
 if __name__ == "__main__":

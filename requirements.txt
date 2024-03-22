@@ -9,3 +9,4 @@ facenet-pytorch
 tqdm>=4.62.1
 moviepy==1.0.3
 ffmpeg==1.4
+tensorflow==2.12

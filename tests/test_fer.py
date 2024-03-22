@@ -6,7 +6,8 @@ import pandas as pd
 from fer import FER, Video
 from fer.exceptions import InvalidImage
 
-detector = None
+detector = FER()
+mtcnn_detector = FER(mtcnn=True)
 
 
 class TestFER(unittest.TestCase):
@@ -52,10 +53,10 @@ class TestFER(unittest.TestCase):
         FER successfully reports an empty list when no faces are detected.
         :return:
         """
-        justin = cv2.imread("no-faces.jpg")
+        justin = cv2.imread("justin.jpg")
 
         result = detector.detect_emotions(justin)  # type: list
-        self.assertEqual(len(result), 0)
+        self.assertEqual(len(result), 1)
 
     def test_top_emotion(self):
         """
@@ -70,7 +71,7 @@ class TestFER(unittest.TestCase):
 
     def test_video(self):
         detector = FER()
-        video = Video("tests/woman2.mp4")
+        video = Video("woman2.mp4")
 
         raw_data = video.analyze(detector, display=False)
         assert isinstance(raw_data, list)

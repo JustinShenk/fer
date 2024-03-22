@@ -72,7 +72,7 @@ Pretty print it with `import pprint; pprint.pprint(result)`.
 Just want the top emotion? Try:
 
 ```python
-emotion, score = detector.top_emotion(img) # 'happy', 0.99
+emotion, score = detector.get_top_emotion(img)  # 'happy', 0.99
 ```
 
 #### MTCNN Facial Recognition
