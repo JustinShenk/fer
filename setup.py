@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import codecs
 import os
 import re
@@ -32,18 +31,18 @@ def find_meta(meta):
     Extract __*meta*__ from META_FILE.
     """
     meta_match = re.search(
-        r"^__{meta}__ = ['\"]([^'\"]*)['\"]".format(meta=meta), META_FILE, re.M
+        rf"^__{meta}__ = ['\"]([^'\"]*)['\"]", META_FILE, re.M
     )
     if meta_match:
         return meta_match.group(1)
-    raise RuntimeError("Unable to find __{meta}__ string.".format(meta=meta))
+    raise RuntimeError(f"Unable to find __{meta}__ string.")
 
 
 URL = find_meta("url")
 PROJECT_URLS = {
     "Documentation": URL,
-    "Bug Tracker": "https://github.com/hynek/argon2_cffi/issues",
-    "Source Code": "https://github.com/hynek/argon2_cffi",
+    "Bug Tracker": "https://github.com/justinshenk/fer/issues",
+    "Source Code": "https://github.com/justinshenk/fer",
 }
 CLASSIFIERS = [
     "Intended Audience :: Developers",
@@ -51,13 +50,17 @@ CLASSIFIERS = [
     "Intended Audience :: Education",
     "Intended Audience :: Science/Research",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Mathematics",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Software Development :: Libraries",
 ]
 
-PYTHON_REQUIRES = ">= 3.6"
+PYTHON_REQUIRES = ">= 3.8"
 
 INSTALL_REQUIRES = [
     "matplotlib",
@@ -68,8 +71,7 @@ INSTALL_REQUIRES = [
     "facenet-pytorch",
     "tqdm>=4.62.1",
     "moviepy",
-    "facenet-pytorch",
-    "ffmpeg==1.4",
+    "ffmpeg-python>=0.2.0",
     "Pillow",
 ]
 

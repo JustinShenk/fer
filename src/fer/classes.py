@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import csv
 import logging
 import os
 import re
-from moviepy.editor import *
 from pathlib import Path
 from typing import Optional, Union
 from zipfile import ZipFile
 
 import cv2
 import pandas as pd
-
+from moviepy.editor import *
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 
@@ -20,7 +18,7 @@ from .utils import draw_annotations
 log = logging.getLogger("fer")
 
 
-class Video(object):
+class Video:
     def __init__(
         self,
         video_file: str,
@@ -145,7 +143,7 @@ class Video(object):
             self.videowriter.release()
 
         if self.save_video:
-            log.info("Completed analysis: saved to {}".format(self.tempfile or outfile))
+            log.info(f"Completed analysis: saved to {self.tempfile or outfile}")
             if self.tempfile:
                 os.replace(self.tempfile, outfile)
 
@@ -275,14 +273,14 @@ class Video(object):
 
         fps = self.cap.get(cv2.CAP_PROP_FPS)
         length = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        assert fps and length, "File {} not loaded".format(self.filepath)
+        assert fps and length, f"File {self.filepath} not loaded"
 
         if save_fps is not None:
             frequency = fps // save_fps
-            log.info("Saving every {} frames".format(frequency))
+            log.info(f"Saving every {frequency} frames")
 
         log.info(
-            "{:.2f} fps, {} frames, {:.2f} seconds".format(fps, length, length / fps)
+            f"{fps:.2f} fps, {length} frames, {length / fps:.2f} seconds"
         )
 
         if self.save_frames:
@@ -296,8 +294,8 @@ class Video(object):
 
         total_frames = length
         if frequency > 1:
-            total_frames = length/frequency
-            
+            total_frames = length // frequency
+
         with logging_redirect_tqdm():
             pbar = tqdm(total=total_frames, unit="frames")
 
@@ -364,7 +362,7 @@ class Video(object):
     def _save_video(self, outfile: str, fps: int, width: int, height: int):
         if os.path.isfile(outfile):
             os.remove(outfile)
-            log.info("Deleted pre-existing {}".format(outfile))
+            log.info(f"Deleted pre-existing {outfile}")
         if self.tempfile and os.path.isfile(self.tempfile):
             os.remove(self.tempfile)
         fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")

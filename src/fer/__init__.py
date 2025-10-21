@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 
 # MIT License
 #
@@ -24,13 +23,10 @@
 # SOFTWARE.
 import logging
 
-from .classes import Video
-from .fer import FER
-
 log = logging.getLogger("fer")
 log.setLevel(logging.INFO)
 
-__version__ = "22.5.1"
+__version__ = "25.10.0"
 
 __title__ = "fer"
 __description__ = "Facial expression recognition from images"

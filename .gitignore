@@ -106,6 +106,43 @@ ENV/
 
 # mypy
 .mypy_cache/
+.dmypy.json
+dmypy.json
 
-data.csv
+# Ruff
+.ruff_cache/
+
+# pytest
+.pytest_cache/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+
+# Test outputs
+data.csv
+output/
+*.jpg
+*.jpeg
+*.png
+!result.jpg
+!justin.jpg
+!no-faces.jpg
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Package building
+*.whl
+*.tar.gz

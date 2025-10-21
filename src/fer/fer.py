@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 
 # MIT License
 #
@@ -30,16 +29,18 @@
 # (https://github.com/oarriaga/face_classification).
 #
 import logging
-import os
-import pkg_resources
-import requests
 import sys
 from typing import Sequence, Tuple, Union
 
 import cv2
 import numpy as np
+import pkg_resources
+import requests
 
-from tensorflow.keras.models import load_model
+try:
+    from tensorflow.keras.models import load_model
+except ImportError:
+    from keras.models import load_model
 
 
 from .utils import load_image
@@ -55,7 +56,7 @@ PADDING = 40
 SERVER_URL = "http://localhost:8501/v1/models/emotion_model:predict"
 
 
-class FER(object):
+class FER:
     """
     Allows performing Facial Expression Recognition ->
         a) Detection of faces
@@ -74,12 +75,30 @@ class FER(object):
     ):
         """
         Initializes the face detector and Keras model for facial expression recognition.
-        :param cascade_file: file URI with the Haar cascade for face classification
-        :param mtcnn: use MTCNN network for face detection (not yet implemented)
-        :param scale_factor: parameter specifying how much the image size is reduced at each image scale
-        :param min_face_size: minimum size of the face to detect
-        :param offsets: padding around face before classification
+
+        Args:
+            cascade_file: File URI with the Haar cascade for face classification
+            mtcnn: Use MTCNN network for face detection instead of Haar Cascade
+            tfserving: Use TensorFlow Serving for predictions
+            scale_factor: How much the image size is reduced at each image scale (default: 1.1)
+            min_face_size: Minimum size of the face to detect in pixels (default: 50)
+            min_neighbors: How many neighbors each candidate rectangle should have (default: 5)
+            offsets: Padding around face before classification as (x_offset, y_offset) (default: (10, 10))
+
+        Raises:
+            ValueError: If parameters are invalid
+            Exception: If MTCNN is requested but facenet-pytorch is not installed
         """
+        # Validate parameters
+        if scale_factor <= 1.0:
+            raise ValueError("scale_factor must be greater than 1.0")
+        if min_face_size < 1:
+            raise ValueError("min_face_size must be at least 1")
+        if min_neighbors < 0:
+            raise ValueError("min_neighbors must be non-negative")
+        if not isinstance(offsets, (tuple, list)) or len(offsets) != 2:
+            raise ValueError("offsets must be a tuple or list of length 2")
+
         self.__scale_factor = scale_factor
         self.__min_neighbors = min_neighbors
         self.__min_face_size = min_face_size
@@ -118,9 +137,8 @@ class FER(object):
             emotion_model = pkg_resources.resource_filename(
                 "fer", "data/emotion_model.hdf5"
             )
-            log.debug("Emotion model: {}".format(emotion_model))
+            log.debug(f"Emotion model: {emotion_model}")
             self.__emotion_classifier = load_model(emotion_model, compile=False)
-            self.__emotion_classifier.make_predict_function()
             self.__emotion_target_size = self.__emotion_classifier.input_shape[1:3]
         return
 
@@ -283,7 +301,7 @@ class FER(object):
                 try:
                     gray_face = cv2.resize(gray_face, self.__emotion_target_size)
                 except Exception as e:
-                    log.warn("{} resize failed: {}".format(gray_face.shape, e))
+                    log.warn(f"{gray_face.shape} resize failed: {e}")
                     continue
 
                 # Local Keras model

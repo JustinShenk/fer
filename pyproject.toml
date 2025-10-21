@@ -1,0 +1,105 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fer"
+version = "25.10.0"
+description = "Facial expression recognition from images"
+readme = "README.md"
+authors = [
+    {name = "Justin Shenk", email = "shenkjustin@gmail.com"}
+]
+maintainers = [
+    {name = "Justin Shenk", email = "shenkjustin@gmail.com"}
+]
+license = {text = "MIT"}
+keywords = ["facial expressions", "emotion detection", "faces", "images"]
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Libraries",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "matplotlib",
+    "opencv-contrib-python",
+    "keras>=2.0.0",
+    "pandas",
+    "requests",
+    "facenet-pytorch",
+    "tqdm>=4.62.1",
+    "moviepy",
+    "ffmpeg-python>=0.2.0",
+    "Pillow",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "coverage",
+    "sphinx",
+    "wheel",
+    "pre-commit",
+    "black",
+    "ruff",
+    "mypy",
+]
+docs = ["sphinx"]
+tests = ["coverage", "pytest"]
+
+[project.urls]
+Homepage = "https://github.com/justinshenk/fer"
+Documentation = "https://github.com/justinshenk/fer"
+"Bug Tracker" = "https://github.com/justinshenk/fer/issues"
+"Source Code" = "https://github.com/justinshenk/fer"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+zip-safe = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501", # line too long, handled by black
+    "B008", # do not perform function calls in argument defaults
+    "C901", # too complex
+]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true

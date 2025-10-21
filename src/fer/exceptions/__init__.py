@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 
 # MIT License
 #
@@ -27,4 +26,15 @@ __author__ = "Justin Shenk"
 
 
 class InvalidImage(Exception):
+    """Raised when an invalid image is provided to FER."""
+    pass
+
+
+class InvalidModelFile(Exception):
+    """Raised when the emotion model file cannot be loaded."""
+    pass
+
+
+class FaceDetectionError(Exception):
+    """Raised when face detection fails."""
     pass
