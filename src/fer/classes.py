@@ -4,18 +4,77 @@ import logging
 import os
 import re
 from pathlib import Path
+from queue import Queue
+from threading import Thread
 from typing import Optional, Union
 from zipfile import ZipFile
 
 import cv2
+import numpy as np
 import pandas as pd
-from moviepy.editor import *
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 
 from .utils import draw_annotations
 
 log = logging.getLogger("fer")
+
+# Optional moviepy import - only needed for audio features
+try:
+    from moviepy.editor import AudioFileClip, CompositeAudioClip, VideoFileClip
+    MOVIEPY_AVAILABLE = True
+except (ImportError, ModuleNotFoundError) as e:
+    MOVIEPY_AVAILABLE = False
+    log.warning(f"moviepy not available: {e}. Audio features will be disabled.")
+
+
+class AsyncFrameWriter:
+    """Asynchronous frame writer for non-blocking I/O operations."""
+
+    def __init__(self, max_queue_size=50):
+        """Initialize async frame writer with a background thread.
+
+        Args:
+            max_queue_size: Maximum number of frames to buffer in queue
+        """
+        self.queue = Queue(maxsize=max_queue_size)
+        self.thread = Thread(target=self._write_worker, daemon=True)
+        self.running = False
+
+    def start(self):
+        """Start the background writer thread."""
+        self.running = True
+        self.thread.start()
+
+    def _write_worker(self):
+        """Background worker that writes frames from queue."""
+        while self.running or not self.queue.empty():
+            try:
+                item = self.queue.get(timeout=0.1)
+                if item is None:  # Poison pill
+                    break
+
+                filepath, frame = item
+                cv2.imwrite(filepath, frame)
+                self.queue.task_done()
+            except:
+                continue
+
+    def write(self, filepath: str, frame: np.ndarray):
+        """Queue a frame for async writing.
+
+        Args:
+            filepath: Path where frame should be saved
+            frame: Frame data to save
+        """
+        self.queue.put((filepath, frame))
+
+    def stop(self):
+        """Stop the writer and wait for queue to empty."""
+        self.queue.join()  # Wait for all items to be processed
+        self.running = False
+        self.queue.put(None)  # Poison pill
+        self.thread.join(timeout=5.0)
 
 
 class Video:
@@ -175,7 +234,7 @@ class Video:
         return faces
 
     def _increment_frames(
-        self, frame, faces, video_id, root, lang="en", size_multiplier=1
+        self, frame, faces, video_id, root, lang="en", size_multiplier=1, async_writer=None
     ):
         # Save images to `self.outdir`
         imgpath = os.path.join(
@@ -193,7 +252,12 @@ class Video:
             )
 
         if self.save_frames:
-            cv2.imwrite(imgpath, frame)
+            if async_writer is not None:
+                # Use async I/O for non-blocking write
+                async_writer.write(imgpath, frame.copy())
+            else:
+                # Fallback to synchronous write
+                cv2.imwrite(imgpath, frame)
 
         if self.display:
             cv2.imshow("Video", frame)
@@ -220,6 +284,8 @@ class Video:
         lang: str = "en",
         include_audio: bool = False,
         size_multiplier: int = 1,
+        batch_size: int = 1,
+        use_async_io: bool = True,
     ) -> list:
         """Recognize facial expressions in video using `detector`.
 
@@ -240,6 +306,8 @@ class Video:
             lang (str): emotion language that will be shown on video
             include_audio (bool): indicates if a sounded version of the prediction video should be created or not
             size_multiplier (int): increases the size of emotion labels shown in the video by x(size_multiplier)
+            batch_size (int): number of frames to process together for GPU efficiency (default: 1)
+            use_async_io (bool): use asynchronous I/O for frame saving (default: True)
         Returns:
 
             data (list): list of results
@@ -296,61 +364,137 @@ class Video:
         if frequency > 1:
             total_frames = length // frequency
 
+        # Initialize async frame writer if enabled
+        async_writer = None
+        if use_async_io and save_frames:
+            async_writer = AsyncFrameWriter(max_queue_size=batch_size * 2)
+            async_writer.start()
+            log.info("Async I/O enabled for frame saving")
+
+        # Frame batching setup
+        frame_batch = []
+        frame_metadata = []  # Store (frame_number, detection_box) for each frame in batch
+
         with logging_redirect_tqdm():
             pbar = tqdm(total=total_frames, unit="frames")
 
-        while self.cap.isOpened():
-            ret, frame = self.cap.read()
-            if not ret:  # end of video
-                break
+        try:
+            while self.cap.isOpened():
+                # Optimize frame skipping by seeking directly to target frames
+                if frequency > 1:
+                    target_frame = self.frameCount
+                    self.cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
 
-            if frame is None:
-                log.warn("Empty frame")
-                continue
+                ret, frame = self.cap.read()
+                if not ret:  # end of video
+                    break
 
-            if self.frameCount % frequency != 0:
-                self.frameCount += 1
-                continue
+                if frame is None:
+                    log.warn("Empty frame")
+                    if frequency > 1:
+                        self.frameCount += frequency
+                    else:
+                        self.frameCount += 1
+                    continue
 
-            if detection_box is not None:
-                frame = self._crop(frame, detection_box)
+                if detection_box is not None:
+                    frame = self._crop(frame, detection_box)
 
-            # Get faces and detect emotions; coordinates are for unpadded frame
-            try:
-                faces = detector.detect_emotions(frame)
-            except Exception as e:
-                log.error(e)
-                break
+                # Add frame to batch
+                frame_batch.append(frame.copy())
+                frame_metadata.append((self.frameCount, detection_box))
 
-            # Offset detection_box to include padding
-            if detection_box is not None:
-                faces = self._offset_detection_box(faces, detection_box)
+                # Process batch when full or at end of video
+                if len(frame_batch) >= batch_size or (max_results and results_nr + len(frame_batch) >= max_results):
+                    # Process batch of frames efficiently
+                    try:
+                        if batch_size > 1:
+                            # Use batch processing for multiple frames
+                            batch_results = detector.batch_detect_emotions(frame_batch)
+                        else:
+                            # Single frame - use regular detection
+                            batch_results = [detector.detect_emotions(frame_batch[0])]
+                    except Exception as e:
+                        log.error(e)
+                        break
 
-            self._increment_frames(frame, faces, video_id, root, lang, size_multiplier)
+                    # Process results for each frame in batch
+                    for idx, (batch_frame, (frame_num, det_box), faces) in enumerate(zip(frame_batch, frame_metadata, batch_results)):
+                        # Offset detection_box to include padding
+                        if det_box is not None:
+                            faces = self._offset_detection_box(faces, det_box)
 
-            if cv2.waitKey(1) & 0xFF == ord("q"):
-                break
+                        self._increment_frames(batch_frame, faces, video_id, root, lang, size_multiplier, async_writer)
 
-            if faces:
-                frames_emotions.append(faces)
+                        if cv2.waitKey(1) & 0xFF == ord("q"):
+                            break
 
-            results_nr += 1
-            if max_results and results_nr > max_results:
-                break
+                        if faces:
+                            frames_emotions.append(faces)
 
-            pbar.update(1)
+                        results_nr += 1
+                        pbar.update(1)
 
-        pbar.close()
+                        # Advance frameCount by frequency for next iteration
+                        if frequency > 1:
+                            self.frameCount += frequency - 1  # -1 because _increment_frames already added 1
+
+                        if max_results and results_nr >= max_results:
+                            break
+
+                    # Clear batch
+                    frame_batch = []
+                    frame_metadata = []
+
+                    if max_results and results_nr >= max_results:
+                        break
+
+            # Process remaining frames in batch
+            if frame_batch:
+                try:
+                    if len(frame_batch) > 1:
+                        batch_results = detector.batch_detect_emotions(frame_batch)
+                    else:
+                        batch_results = [detector.detect_emotions(frame_batch[0])]
+                except Exception as e:
+                    log.error(e)
+                else:
+                    for idx, (batch_frame, (frame_num, det_box), faces) in enumerate(zip(frame_batch, frame_metadata, batch_results)):
+                        if det_box is not None:
+                            faces = self._offset_detection_box(faces, det_box)
+
+                        self._increment_frames(batch_frame, faces, video_id, root, lang, size_multiplier, async_writer)
+
+                        if faces:
+                            frames_emotions.append(faces)
+
+                        results_nr += 1
+                        pbar.update(1)
+
+                        if frequency > 1:
+                            self.frameCount += frequency - 1
+
+        finally:
+            pbar.close()
+            # Stop async writer if enabled
+            if async_writer is not None:
+                log.info("Waiting for async I/O to complete...")
+                async_writer.stop()
+                log.info("Async I/O completed")
+
         self._close_video(outfile, save_frames, zip_images)
 
         if include_audio:
-            audio_suffix = "_audio."
-            my_audio = AudioFileClip(self.filepath)
-            new_audioclip = CompositeAudioClip([my_audio])
+            if not MOVIEPY_AVAILABLE:
+                log.error("Audio feature requested but moviepy is not available. Install with: pip install moviepy")
+            else:
+                audio_suffix = "_audio."
+                my_audio = AudioFileClip(self.filepath)
+                new_audioclip = CompositeAudioClip([my_audio])
 
-            my_output_clip = VideoFileClip(outfile)
-            my_output_clip.audio = new_audioclip
-            my_output_clip.write_videofile(audio_suffix.join(outfile.rsplit(".", 1)))
+                my_output_clip = VideoFileClip(outfile)
+                my_output_clip.audio = new_audioclip
+                my_output_clip.write_videofile(audio_suffix.join(outfile.rsplit(".", 1)))
 
         return self.to_format(frames_emotions, output)
 

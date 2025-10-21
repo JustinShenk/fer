@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fer"
-version = "25.10.2"
+version = "25.10.3"
 description = "Facial expression recognition from images"
 readme = "README.md"
 authors = [

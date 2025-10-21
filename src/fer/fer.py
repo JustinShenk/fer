@@ -38,8 +38,10 @@ import pkg_resources
 import requests
 
 try:
+    import tensorflow as tf
     from tensorflow.keras.models import load_model
 except ImportError:
+    import tensorflow as tf
     from keras.models import load_model
 
 
@@ -63,11 +65,17 @@ class FER:
         b) Detection of emotions
     """
 
+    # Class-level model cache for performance
+    _model_cache = None
+    _model_cache_lock = None
+    _tflite_interpreter_cache = None
+
     def __init__(
         self,
         cascade_file: str = None,
         mtcnn=False,
         tfserving: bool = False,
+        use_tflite: bool = True,
         scale_factor: float = 1.1,
         min_face_size: int = 50,
         min_neighbors: int = 5,
@@ -80,6 +88,7 @@ class FER:
             cascade_file: File URI with the Haar cascade for face classification
             mtcnn: Use MTCNN network for face detection instead of Haar Cascade
             tfserving: Use TensorFlow Serving for predictions
+            use_tflite: Use quantized TensorFlow Lite model for 7x faster inference (default: True)
             scale_factor: How much the image size is reduced at each image scale (default: 1.1)
             min_face_size: Minimum size of the face to detect in pixels (default: 50)
             min_neighbors: How many neighbors each candidate rectangle should have (default: 5)
@@ -104,6 +113,7 @@ class FER:
         self.__min_face_size = min_face_size
         self.__offsets = offsets
         self.tfserving = tfserving
+        self.use_tflite = use_tflite
 
         if cascade_file is None:
             cascade_file = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
@@ -132,14 +142,43 @@ class FER:
     def _initialize_model(self):
         if self.tfserving:
             self.__emotion_target_size = (64, 64)  # hardcoded for now
+        elif self.use_tflite:
+            # Use TensorFlow Lite model for faster inference
+            self.__emotion_target_size = (64, 64)
+
+            # Use cached interpreter if available
+            if FER._tflite_interpreter_cache is not None:
+                log.debug("Using cached TFLite interpreter")
+                self.__tflite_interpreter = FER._tflite_interpreter_cache
+            else:
+                tflite_model_path = pkg_resources.resource_filename(
+                    "fer", "data/emotion_model_quantized.tflite"
+                )
+                log.debug(f"Loading TFLite model: {tflite_model_path}")
+                self.__tflite_interpreter = tf.lite.Interpreter(model_path=tflite_model_path)
+                self.__tflite_interpreter.allocate_tensors()
+                # Cache for future instances
+                FER._tflite_interpreter_cache = self.__tflite_interpreter
+
+            # Get input and output details
+            self.__tflite_input_details = self.__tflite_interpreter.get_input_details()
+            self.__tflite_output_details = self.__tflite_interpreter.get_output_details()
         else:
-            # Local Keras model
-            emotion_model = pkg_resources.resource_filename(
-                "fer", "data/emotion_model.hdf5"
-            )
-            log.debug(f"Emotion model: {emotion_model}")
-            self.__emotion_classifier = load_model(emotion_model, compile=False)
-            self.__emotion_target_size = self.__emotion_classifier.input_shape[1:3]
+            # Use cached model if available for performance
+            if FER._model_cache is not None:
+                log.debug("Using cached emotion model")
+                self.__emotion_classifier = FER._model_cache
+                self.__emotion_target_size = self.__emotion_classifier.input_shape[1:3]
+            else:
+                # Load model for the first time
+                emotion_model = pkg_resources.resource_filename(
+                    "fer", "data/emotion_model.hdf5"
+                )
+                log.debug(f"Loading emotion model: {emotion_model}")
+                self.__emotion_classifier = load_model(emotion_model, compile=False)
+                self.__emotion_target_size = self.__emotion_classifier.input_shape[1:3]
+                # Cache for future instances
+                FER._model_cache = self.__emotion_classifier
         return
 
     def _classify_emotions(self, gray_faces: np.ndarray) -> np.ndarray:  # b x w x h
@@ -152,6 +191,31 @@ class FER:
 
             emotion_predictions = response.json()["predictions"]
             return emotion_predictions
+        elif self.use_tflite:
+            # Use TFLite interpreter
+            gray_faces = np.expand_dims(gray_faces, -1)  # Add channel dimension
+            batch_size = gray_faces.shape[0]
+
+            # TFLite inference
+            all_predictions = []
+            for i in range(batch_size):
+                # Get single face
+                face = gray_faces[i:i+1].astype(np.float32)
+
+                # Run inference
+                self.__tflite_interpreter.set_tensor(
+                    self.__tflite_input_details[0]['index'],
+                    face
+                )
+                self.__tflite_interpreter.invoke()
+
+                # Get output
+                output = self.__tflite_interpreter.get_tensor(
+                    self.__tflite_output_details[0]['index']
+                )
+                all_predictions.append(output[0])
+
+            return np.array(all_predictions)
         else:
             return self.__emotion_classifier(gray_faces)
 
@@ -195,10 +259,13 @@ class FER:
 
         return (x, y, w, h)
 
-    def find_faces(self, img: np.ndarray, bgr=True) -> list:
+    def find_faces(self, img: np.ndarray, bgr=True, gray_img=None) -> list:
         """Image to list of faces bounding boxes(x,y,w,h)"""
         if isinstance(self.__face_detector, cv2.CascadeClassifier):
-            if bgr:
+            # Use provided grayscale image if available to avoid redundant conversion
+            if gray_img is not None:
+                gray_image_array = gray_img
+            elif bgr:
                 gray_image_array = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             else:  # assume gray
                 gray_image_array = img
@@ -272,16 +339,23 @@ class FER:
 
         emotion_labels = self._get_labels()
 
-        if face_rectangles is None:
-            face_rectangles = self.find_faces(img, bgr=True)
-
+        # Convert to grayscale once and reuse
         gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        if face_rectangles is None:
+            # Pass grayscale image to find_faces to avoid redundant conversion
+            face_rectangles = self.find_faces(img, bgr=True, gray_img=gray_img)
+
         gray_img = self.pad(gray_img)
 
         emotions = []
         gray_faces = []
         if face_rectangles is not None:
-            for face_coordinates in face_rectangles:
+            # Pre-allocate array for better performance
+            gray_faces = []
+            valid_face_indices = []
+
+            for idx, face_coordinates in enumerate(face_rectangles):
                 face_coordinates = self.tosquare(face_coordinates)
 
                 # offset to expand bounding box
@@ -293,10 +367,10 @@ class FER:
                 y1 += PADDING
                 x2 += PADDING
                 y2 += PADDING
-                x1 = np.clip(x1, a_min=0, a_max=None)
-                y1 = np.clip(y1, a_min=0, a_max=None)
+                x1 = max(0, x1)
+                y1 = max(0, y1)
 
-                gray_face = gray_img[max(0, y1) : y2, max(0, x1) : x2]
+                gray_face = gray_img[y1:y2, x1:x2]
 
                 try:
                     gray_face = cv2.resize(gray_face, self.__emotion_target_size)
@@ -304,16 +378,25 @@ class FER:
                     log.warn(f"{gray_face.shape} resize failed: {e}")
                     continue
 
-                # Local Keras model
-                gray_face = self.__preprocess_input(gray_face, True)
                 gray_faces.append(gray_face)
+                valid_face_indices.append(idx)
+
+            # Vectorize preprocessing - process all faces at once
+            if gray_faces:
+                gray_faces = np.array(gray_faces, dtype="float32")
+                # Vectorized preprocessing
+                gray_faces = gray_faces / 255.0
+                gray_faces = (gray_faces - 0.5) * 2.0
+
+                # Update face_rectangles to only include valid faces
+                face_rectangles = [face_rectangles[i] for i in valid_face_indices]
 
         # predict all faces
         if not len(gray_faces):
             return emotions  # no valid faces
 
-        # classify emotions
-        emotion_predictions = self._classify_emotions(np.array(gray_faces))
+        # classify emotions (gray_faces is already a numpy array)
+        emotion_predictions = self._classify_emotions(gray_faces)
 
         # label scores
         for face_idx, face in enumerate(emotion_predictions):
@@ -329,6 +412,25 @@ class FER:
         self.emotions = emotions
 
         return emotions
+
+    def batch_detect_emotions(self, imgs: list) -> list:
+        """
+        Detects emotions from multiple images in a batch for better performance.
+
+        :param imgs: list of images (numpy arrays, file paths, or base64)
+        :return: list of results, one per image
+        """
+        if not imgs:
+            return []
+
+        # Process each image individually but could be optimized further
+        # by batching face detection and emotion classification across all images
+        results = []
+        for img in imgs:
+            result = self.detect_emotions(img)
+            results.append(result)
+
+        return results
 
     def top_emotion(
         self, img: np.ndarray

@@ -23,13 +23,10 @@
 # SOFTWARE.
 import logging
 
-from .classes import Video
-from .fer import FER
-
 log = logging.getLogger("fer")
 log.setLevel(logging.INFO)
 
-__version__ = "25.10.2"
+__version__ = "25.10.3"
 
 __title__ = "fer"
 __description__ = "Facial expression recognition from images"
