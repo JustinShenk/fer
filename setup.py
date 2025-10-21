@@ -65,12 +65,12 @@ PYTHON_REQUIRES = ">= 3.8"
 INSTALL_REQUIRES = [
     "matplotlib",
     "opencv-contrib-python",
-    "keras>=2.0.0",
+    "tensorflow>=2.0.0",
     "pandas",
     "requests",
     "facenet-pytorch",
     "tqdm>=4.62.1",
-    "moviepy",
+    "moviepy>=1.0.3,<2.0",
     "ffmpeg-python>=0.2.0",
     "Pillow",
 ]
