@@ -9,7 +9,7 @@ Facial expression recognition.
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](http://colab.research.google.com/github/justinshenk/fer/blob/master/fer-video-demo.ipynb)
 
-[![DOI](https://zenodo.org/badge/150107943.svg)](https://zenodo.org/badge/latestdoi/150107943)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5362355.svg)](https://doi.org/10.5281/zenodo.5362355)
 
 
 INSTALLATION
@@ -45,7 +45,7 @@ $ pip install tensorflow-gpu\>=1.7.0
 To extract videos that includes sound, ffmpeg and moviepy packages must be installed with pip:
 
 ```bash
-$ pip install ffmpeg moviepy 
+$ pip install ffmpeg moviepy
 ```
 
 USAGE

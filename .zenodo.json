@@ -1,0 +1,10 @@
+{
+  "title": "FER: Facial Expression Recognition in Python",
+  "description": "A Python library for facial expression recognition from images and video.",
+  "upload_type": "software",
+  "license": "MIT",
+  "creators": [
+    { "name": "Shenk, Justin" },
+    { "name": "FER contributors" }
+  ]
+}

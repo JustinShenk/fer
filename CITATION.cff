@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+title: "FER: Facial Expression Recognition in Python"
+message: "If you use this software, please cite it using these metadata."
+type: software
+authors:
+  - given-names: Justin
+    family-names: Shenk
+    alias: justinshenk
+  - name: "The FER contributors"
+repository-code: "https://github.com/justinshenk/fer"
+url: "https://github.com/justinshenk/fer"
+license: MIT
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.5362355
+    description: "Concept DOI — always resolves to the latest release"
